@@ -46,6 +46,7 @@ const sendOtp = async (req, res) => {
 const verifyOtp=async(req,res)=>{
     try {
         let {otp,email}=req.body;
+        console.log(req.body)
         let user = await User.findOne({email});
         console.log(user.otp+" "+otp)
         if(!otp || !email) return res.send({error:'please enter valid data'});

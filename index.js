@@ -20,7 +20,7 @@ app.use("/api/v1/email",emailRouter)
 
 
 
-app.listen(5001,()=>{
+app.listen(5000,()=>{
     console.log("your app is running on port 5000");
     config()
 })
