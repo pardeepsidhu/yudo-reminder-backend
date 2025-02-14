@@ -46,14 +46,14 @@ const sendOtp = async (req, res) => {
 const verifyOtp=async(req,res)=>{
     try {
         let {otp,email}=req.body;
-        console.log(req.body)
-        let user = await User.findOne({email});
-        console.log(user.otp+" "+otp)
+        // console.log(req.body)
+        // console.log(user.otp+" "+otp)
         if(!otp || !email) return res.send({error:'please enter valid data'});
+        let user = await User.findOne({email});
         if(user.otp !=otp) return res.send({error:"please enter valid otp"});
         user = delete user.toObject().password;
         let result = await User.updateOne({email},{$set:{otp:"verified"}});
-        console.log(process.env.JWT_SECRET)
+        // console.log(process.env.JWT_SECRET)
         let token = jwt.sign(user,process.env.JWT_SECRET)
         return res.send({token})
     } catch (error) {

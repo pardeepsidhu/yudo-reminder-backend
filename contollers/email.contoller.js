@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
 // async..await is not allowed in global scope, must use a wrapper
 async function sendOtpFun(opt, receiver) {
   try {
-    console.log(req.body)
+    // console.log(req.body)
     const info = await transporter.sendMail({
       from: process.env.EMAIL, // Sender address
       to: receiver, // Recipient email
