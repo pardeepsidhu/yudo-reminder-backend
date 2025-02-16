@@ -55,12 +55,13 @@ import cron from "node-cron";
 
 
 const scheduleEmail = async (req, res) => {
+  try {
   const {  subject, body, scheduleTime } = req.body;
   let to = req.user.email;
   const jobId = new mongoose.Types.ObjectId().toString();
   
   const job = schedule.scheduleJob(jobId, new Date(scheduleTime), async () => {
-    try {
+    
       const info = await transporter.sendMail({
         from: process.env.EMAIL,
         to,
@@ -81,14 +82,15 @@ const scheduleEmail = async (req, res) => {
       });
   
       console.log(`Scheduled email sent to ${to} at ${scheduleTime}. Message ID: ${info.messageId}`);
-    } catch (error) {
-      console.error(`Error sending scheduled email to ${to}:`, error);
-    }
+   
   });
 
   const email = new Email({ to, subject, body, scheduleTime, jobId });
   await email.save();
   res.json({ message: "Email scheduled successfully", jobId });
+} catch (error) {
+  console.error(`Error sending scheduled email to ${to}:`, error);
+}
 }
 
 
