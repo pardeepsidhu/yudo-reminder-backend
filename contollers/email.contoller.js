@@ -52,6 +52,7 @@ import cron from "node-cron";
 
 
 
+    // setEmails(emails.filter((email) => email.id !== deleteId));
 
 
 const scheduleEmail = async (req, res) => {
@@ -98,15 +99,18 @@ const scheduleEmail = async (req, res) => {
 
 
 const deleteSchedule = async (req, res) => {
-  const { jobId } = req.params;
-  const job = schedule.scheduledJobs[jobId];
-  if (job) {
-      job.cancel();
-      await Email.deleteOne({ jobId });
-      res.json({ message: "Scheduled email canceled" });
-  } else {
-      res.status(404).json({ error: "Job not found" });
+  try {
+    const { jobId } = req.params;
+    const job = schedule.scheduledJobs[jobId];
+    if (job) {
+        job.cancel();
+    } 
+    await Email.deleteOne({jobId});
+    res.send({message:"job deleted !"})
+  } catch (error) {
+    res.status(400).send({error:"Some Internal Error Accured !"})
   }
+ 
 }
 
 const getAll = async(req,res)=>{
