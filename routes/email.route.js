@@ -12,7 +12,7 @@ router.get("/",(req,res)=>{
 
 router.post("/schedule",autherntication,scheduleEmail);
 router.delete("/delete/:jobId",deleteSchedule);
-router.get("/getall",autherntication,getAll);
+router.get("/getall/:limit",autherntication,getAll);
 router.get("/getone/:id",autherntication,getOne)
 
 export default router;

@@ -112,8 +112,10 @@ const deleteSchedule = async (req, res) => {
 const getAll = async(req,res)=>{
   try {
     let email = req.user.email;
-    let emails = await Email.find({to:email})
-    res.send({total:emails.length,emails})
+    let {limit} =req.params;
+    let emails = await Email.find({to:email}).limit(limit)
+    let count = await Email.find({to:email})
+    res.send({total:count.length,emails})
   } catch (error) {
     console.log(error);
     res.status(400).send({error:"some error accured while fetching schedules !"})
