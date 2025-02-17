@@ -10,7 +10,7 @@ const generete = async(req,res)=>{
     try {
         const {prompt} = req.body;
         if(!prompt) res.send({error:"Please Provide Required Prompt !"})
-        const prompt2 = prompt+" write an email for me in very very short give me in format of json {subject,message} never write any thing else give me always as format defined write nothing else reather than json object if time not defined consider as today";
+        const prompt2 = prompt+" write an email for me in  short give me in format of json {subject,message} never write any thing else give me always as format defined write nothing else reather than json object if time not defined consider as today";
         const result = await model.generateContent(prompt2);
         const response = result.response.text().replace('```json','').replace('```','')
         res.send(response)
