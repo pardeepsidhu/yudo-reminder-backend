@@ -43,24 +43,32 @@ const sendOtp = async (req, res) => {
     }
 };
 
-const verifyOtp=async(req,res)=>{
+const verifyOtp = async (req, res) => {
     try {
-        let {otp,email}=req.body;
-        // console.log(req.body)
-        // console.log(user.otp+" "+otp)
-        if(!otp || !email) return res.send({error:'please enter valid data'});
-        let user = await User.findOne({email});
-        if(user.otp !=otp) return res.send({error:"please enter valid otp"});
-        user = delete user.toObject().password;
-        let result = await User.updateOne({email},{$set:{otp:"verified"}});
-        // console.log(process.env.JWT_SECRET)
-        let token = jwt.sign(user,process.env.JWT_SECRET)
-        return res.send({token})
+        let { otp, email } = req.body;
+
+        if (!otp || !email) return res.send({ error: 'Please enter valid data' });
+
+        let user = await User.findOne({ email });
+        
+        if (!user) return res.status(404).send({ error: "User not found!" });
+        if(user.otp=="verified") return res.status(404).send({ error: "User Already Exist Please Login !" }); 
+        if (user.otp != otp) return res.send({ error: "Please enter valid otp" });
+
+        await User.updateOne({ email }, { $set: { otp: "verified" } });
+
+        user = await User.findOne({ email }); 
+        // console.log("this i suser "+ user)
+        user = user.toObject();
+        delete user.password;
+        let token = jwt.sign(user, process.env.JWT_SECRET);
+        return res.send({ token });
+
     } catch (error) {
-        console.log(error);
-        return res.send({error:'some error accured while verifing opt..'})
+        console.error(error);
+        return res.status(500).send({ error: 'Some error occurred while verifying OTP.' });
     }
-}
+};
 
 
 const login = async (req,res)=>{

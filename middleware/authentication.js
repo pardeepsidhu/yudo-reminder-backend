@@ -8,12 +8,12 @@ const auth = async (req,res,next)=>{
         console.log(token)
         if(!token) return res.status(404).send({error:'please provide a vlaid json token !'});
         let userId = jwt.verify(token,process.env.JWT_SECRET);
-        console.log(userId)
+        // console.log("this is userID "+userId)
         // let user = await User.findOne()
         req.user = userId;
         next();
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(400).send({error:"some internal error accured while authentication"})
     }
 }

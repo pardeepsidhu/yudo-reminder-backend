@@ -59,6 +59,7 @@ const scheduleEmail = async (req, res) => {
   try {
   const {  subject, body, scheduleTime } = req.body;
   let to = req.user.email;
+  console.log(subject+" "+body+" "+scheduleTime+" "+to)
   if(!to || !subject || !body ||!scheduleTime) return res.status(400).send({error:"Please Provide Valid Data !"})
   const jobId = new mongoose.Types.ObjectId().toString();
   
