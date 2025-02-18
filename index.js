@@ -4,8 +4,14 @@ import config from "./DB/config.js"
 import dotenv from "dotenv"
 import userRouter from './routes/user.route.js'
 import emailRouter from "./routes/email.route.js"
+// import {sendMessage} from "./contollers/telegram.controller.js"
+
 
 import cors from "cors"
+
+
+// sendMessage()
+
 const app = express();
 dotenv.config()
 // sk-20529d6502f445ef840cd5c623a8a9d3
