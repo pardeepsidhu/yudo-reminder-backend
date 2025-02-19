@@ -35,6 +35,7 @@ const pollUpdates = async () => {
             lastUpdateId = update.update_id;
         }
     } catch (error) {
+        console.log(error)
         console.error("❌ Polling Error:", error.message);
     }
 };
