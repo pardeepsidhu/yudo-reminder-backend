@@ -166,7 +166,7 @@ const getAll = async(req,res)=>{
   try {
     let email = req.user.email;
     let {limit} =req.params;
-    let emails = await Email.find({to:email}).limit(limit)
+    let emails = await Email.find({ to: email }).sort({ createdAt: -1 }).limit(limit);
     let count = await Email.find({to:email})
     res.send({total:count.length,emails})
   } catch (error) {
