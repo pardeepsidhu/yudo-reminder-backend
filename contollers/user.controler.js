@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import User from '../models/user.model.js'
-import { sendOtpFun } from './email.contoller.js';
+import { sendOtpFun, sendTelegramLink } from './email.contoller.js';
 import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken"
 dotenv.config("../.env")
@@ -26,7 +26,7 @@ const sendOtp = async (req, res) => {
 
         if (!user) {
             // Create new user if not found
-            user = new User({ email, otp, password: hashedPass });
+            user = new User({ email, otp, password: hashedPass,telegram:"" });
             await user.save();
         } else {
             // Update existing user's OTP and password
@@ -56,7 +56,8 @@ const verifyOtp = async (req, res) => {
         if (user.otp != otp) return res.send({ error: "Please enter valid otp" });
 
         await User.updateOne({ email }, { $set: { otp: "verified" } });
-
+        const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(user._id)}`;
+        await sendTelegramLink(link,email);
         user = await User.findOne({ email }); 
         // console.log("this i suser "+ user)
         user = user.toObject();

@@ -7,7 +7,7 @@ import { generete } from "../contollers/Ai.controller.js";
 const router = Router();
 
 
-router.get("/",(req,res)=>{
+router.get("/",autherntication,(req,res)=>{
     res.send("hello wrold from email route")
 })
 

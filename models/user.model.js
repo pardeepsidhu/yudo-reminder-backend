@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema(
     },
     otp:{
       type:String
+    },
+    telegram:{ 
+      type:String
     }
   },
   { timestamps: true }

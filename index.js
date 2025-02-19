@@ -5,7 +5,7 @@ import dotenv from "dotenv"
 import userRouter from './routes/user.route.js'
 import emailRouter from "./routes/email.route.js"
 // import {sendMessage} from "./contollers/telegram.controller.js"
-
+import { pollUpdates, sendTelegramMessage } from "./contollers/telegram.controller.js"
 
 import cors from "cors"
 
@@ -28,7 +28,14 @@ app.use("/api/v1/email",emailRouter)
 
 
 
+// sendTelegramMessage("5966320441","hhhff","hhfhf").then(
+//     console.log("telegram message sent !")
+// )
+
+
+
 app.listen(5000,()=>{
     console.log("your app is running on port 5000");
     config()
+    setInterval(pollUpdates,6000);
 })

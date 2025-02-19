@@ -1,39 +1,63 @@
-const { TelegramClient } = require("telegram");
-const { StringSession } = require("telegram/sessions");
-const input = require("input"); // For user input
+let lastUpdateId = 0;
+import User from "../models/user.model.js"
+import dotenv from "dotenv"
+import axios from "axios";
+dotenv.config("../.env")
 
-const API_ID = "23608320"; // Replace with your API ID
-const API_HASH = "13605f352ce27d94bd1b9edfe8c48f31"; // Replace with your API Hash
-
-const stringSession = new StringSession(""); // Empty for first login
-
-const sendMessage = async () => {
-    const client = new TelegramClient(stringSession, API_ID, API_HASH, {
-        connectionRetries: 5,
-    });
-
-    console.log("Connecting to Telegram...");
-    await client.start({
-        phoneNumber: async () => await input.text("Enter your phone number: "),
-        password: async () => await input.text("Enter your password (if 2FA enabled): "),
-        phoneCode: async () => await input.text("Enter the OTP you received: "),
-        onError: (err) => console.log(err),
-    });
-
-    console.log("Connected!");
-    console.log("Your session string (save this for future logins):", client.session.save());
-
-    const receiver = await input.text("Enter the username, phone number, or user ID of the recipient: ");
-    const message = await input.text("Enter your message: ");
-
+const pollUpdates = async () => {
     try {
-        await client.sendMessage(receiver, { message });
-        console.log("Message sent successfully!");
-    } catch (error) {
-        console.error("Failed to send message:", error);
-    }
+        const { data } = await axios.get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUpdates`, {
+            params: { offset: lastUpdateId + 1 }
+        });
 
-    await client.disconnect();
+        for (const update of data.result) {
+            if (!update.message) continue;
+
+            const chatId = update.message.chat.id;
+            const text = update.message.text?.trim();
+            // console.log(chatId+" "+text)
+            // ❌ Ignore messages that are NOT "/start <email>"
+            if (!text.startsWith("/start")) continue;
+            // console.log(chatId+" "+text+" fff")
+            const _id = text.replace("/start", "").trim();
+            if (!_id) continue; 
+            await User.updateOne({_id},{$set:{telegram:chatId}})
+            // users[email] = chatId; // ✅ Store user
+
+            console.log(`✅ Registered: ${_id} -> ${chatId}`);
+
+            // ✅ Send confirmation message
+            await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+                chat_id: chatId,
+                text: "✅ You are successfuly registered ! with YUDO REMIDER . now you will revieve you all schedules through telegram as well ...",
+            });
+
+            lastUpdateId = update.update_id;
+        }
+    } catch (error) {
+        console.error("❌ Polling Error:", error.message);
+    }
 };
 
-export {sendMessage}
+// 🔄 Poll every 3 seconds
+// setInterval(pollUpdates, 6000);
+
+const sendTelegramMessage = async (chatId,subject,message) => {
+
+    try {
+        let body = `<strong>Reminder From Yudo-Reminder</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${message}`;
+
+        await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+            chat_id: chatId,
+            text: body,
+            parse_mode: 'HTML'  
+        });
+        
+
+    } catch (error) {
+        console.log({ error: "❌ Failed to send message." });
+    }
+}
+
+
+export {pollUpdates,sendTelegramMessage}
