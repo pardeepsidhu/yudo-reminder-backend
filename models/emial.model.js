@@ -6,7 +6,7 @@ const emailSchema = new mongoose.Schema({
   body: { type: String, required: true },
   scheduleTime: { type: Date, required: true },
   jobId: { type: String }, 
-});
+} , { timestamps: true });
 
 const model = mongoose.model("Email", emailSchema);
 export default model;
