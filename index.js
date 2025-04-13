@@ -5,7 +5,7 @@ import dotenv from "dotenv"
 import userRouter from './routes/user.route.js'
 import emailRouter from "./routes/email.route.js"
 // import {sendMessage} from "./contollers/telegram.controller.js"
-import { pollUpdates, sendTelegramMessage } from "./contollers/telegram.controller.js"
+import { pollUpdates } from "./contollers/telegram.controller.js"
 
 import cors from "cors"
 

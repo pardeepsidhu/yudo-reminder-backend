@@ -1,20 +1,31 @@
 import { Router } from "express";
-import Email from "../models/emial.model.js"
-import { deleteSchedule, getAll, getOne, scheduleEmail } from "../contollers/email.contoller.js";
-import autherntication from "../middleware/authentication.js"
+import Email from "../models/emial.model.js";
+import { 
+  deleteSchedule, 
+  getAll, 
+  getOne, 
+  scheduleEmail, 
+  updateSchedule 
+} from "../contollers/email.contoller.js";
+import autherntication from "../middleware/authentication.js";
 import { generete } from "../contollers/Ai.controller.js";
-// import auth from "../middleware/authentication.js";
+
 const router = Router();
 
+router.get("/", autherntication, (req, res) => {
+  res.send("hello world from email route");
+});
 
-router.get("/",autherntication,(req,res)=>{
-    res.send("hello wrold from email route")
-})
+// Schedule routes
+router.post("/schedule", autherntication, scheduleEmail);
+router.put("/update/:id", autherntication, updateSchedule);
+router.delete("/delete/:jobId", autherntication, deleteSchedule);
 
-router.post("/schedule",autherntication,scheduleEmail);
-router.delete("/delete/:jobId",deleteSchedule);
-router.get("/getall/:limit",autherntication,getAll);
-router.get("/getone/:id",autherntication,getOne)
-router.post("/generate",generete)
+// Get routes
+router.get("/getall", autherntication, getAll);
+router.get("/getone/:id", autherntication, getOne);
+
+// AI generation route
+router.post("/generate", generete);
 
 export default router;

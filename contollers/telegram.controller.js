@@ -40,25 +40,6 @@ const pollUpdates = async () => {
     }
 };
 
-// 🔄 Poll every 3 seconds
-// setInterval(pollUpdates, 6000);
-
-const sendTelegramMessage = async (chatId,subject,message) => {
-
-    try {
-        let body = `<strong>Reminder From Yudo-Reminder</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${message}`;
-
-        await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-            chat_id: chatId,
-            text: body,
-            parse_mode: 'HTML'  
-        });
-        
-
-    } catch (error) {
-        console.log({ error: "❌ Failed to send message." });
-    }
-}
 
 
-export {pollUpdates,sendTelegramMessage}
+export {pollUpdates}
