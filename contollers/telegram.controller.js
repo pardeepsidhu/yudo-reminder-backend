@@ -2,6 +2,7 @@ let lastUpdateId = 0;
 import User from "../models/user.model.js"
 import dotenv from "dotenv"
 import axios from "axios";
+import { sendTelegramLink } from "./email.contoller.js";
 dotenv.config("../.env")
 
 const pollUpdates = async () => {
@@ -41,5 +42,16 @@ const pollUpdates = async () => {
 };
 
 
+const telegramUpadate=async(req,res)=>{
+    try {
+        let email = req.user.email;
+        const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(req.user._id)}`;
+        await sendTelegramLink(link,email);
+        res.send({message:"telegram link send successfuly !"})
+    } catch (error) {
+        console.log(error)
+        res.status(400).send({error:"some error accured while sending telgram link !"})
+    }
+}
 
-export {pollUpdates}
+export {pollUpdates,telegramUpadate}

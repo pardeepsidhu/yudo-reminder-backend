@@ -91,4 +91,55 @@ const login = async (req,res)=>{
     }
 }
 
-export {sendOtp,verifyOtp,login}
+const getProfile=async(req,res)=>{
+    try {
+        let userId = req.user._id;
+        console.log(userId);
+        if(!userId){
+            return res.status(401).send({error:"unauthorized user !"})
+        }
+        let user  = await User.findById(userId);
+        if(!user) return res.status(401).send({error:"unauthorized user !"})
+        user = user.toObject()
+        delete user.password;
+        res.send(user);
+    } catch (error) {
+        console.log(error)
+        res.status(400).send({error:"some error accured while fetching user !"})
+    }
+}
+
+
+const updateProfile = async (req, res) => {
+    try {
+      let userId = req.user._id;
+      console.log("hello");
+      const { name, profile } = req.body;
+      console.log(name, profile);
+      
+      if (!userId) {
+        return res.status(401).send({ error: "unauthorized user!" });
+      }
+      
+      let user = await User.findById(userId);
+      if (!user) return res.status(401).send({ error: "unauthorized user!" });
+      
+      // Create update object with only the fields that are provided
+      const updateFields = {};
+      if (name !== undefined) updateFields.name = name;
+      if (profile !== undefined) updateFields.profile = profile;
+      
+      // Only update if there are fields to update
+      if (Object.keys(updateFields).length > 0) {
+        let updateResult = await User.updateOne({ _id: userId }, updateFields);
+        res.send({ message: "profile updated" });
+      } else {
+        res.send({ message: "no fields to update" });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).send({ error: "some error occurred while updating user!" });
+    }
+  };
+
+export {sendOtp,verifyOtp,login,getProfile,updateProfile}

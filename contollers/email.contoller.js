@@ -171,7 +171,7 @@ const deleteSchedule = async (req, res) => {
 const getAll = async (req, res) => {
   try {
     const email = req.user.email;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip) || 0;
     const status = req.query.status;
 
@@ -184,13 +184,23 @@ const getAll = async (req, res) => {
     }
 
     // Fetch emails with pagination and sorting
-    const emails = await Email.find(query)
+    let emails;
+    if(limit){
+       emails = await Email.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
+    }
+    else{
+      emails = await Email.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip);
+    }
+   
 
     // Get total count for pagination
     const total = await Email.countDocuments(query);
+    // console.log(emails)
 
     res.send({
       total,
