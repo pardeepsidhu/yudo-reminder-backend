@@ -46,6 +46,62 @@ async function sendOtpFun(opt, receiver) {
   }
 }
 
+export async function sendResetPasswordLink(link, receiver) {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: receiver,
+      subject: "Yudo-Scheduler Password Reset Link",
+      text: `Please click the following link to reset your password: ${link}. This link will expire in 10 minutes. If you didn't request a reset, please ignore this email.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 500px; margin: auto; background-color: #f9f9f9;">
+          <h2 style="color: #E74C3C;">Reset Your Password</h2>
+          <p style="font-size: 16px; color: #333;">Click the button below to reset your password:</p>
+          <p>
+            <a href="${link}" style="font-size: 18px; color: white; background-color: #E74C3C; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          </p>
+          <p style="font-size: 14px; color: #666; margin-top: 10px;">This link will expire in <strong>10 minutes</strong>.</p>
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+          <p style="font-size: 12px; color: #999;">If you did not request a password reset, please ignore this email.</p>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error("Error sending reset password link:", error);
+    throw new Error("Failed to send reset password link");
+  }
+}
+ 
+export async function sendQuickLoginLink(link, receiver) {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: receiver,
+      subject: "Yudo-Scheduler Quick Login Link",
+      text: `Click the following link to log in quickly to your account: ${link}. This link will expire in 10 minutes. If you didn’t request this, please ignore the email.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 500px; margin: auto; background-color: #f9f9f9;">
+          <h2 style="color: #3498DB;">Quick Login</h2>
+          <p style="font-size: 16px; color: #333;">Click the button below to securely log in:</p>
+          <p>
+            <a href="${link}" style="font-size: 18px; color: white; background-color: #3498DB; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login Now</a>
+          </p>
+          <p style="font-size: 14px; color: #666; margin-top: 10px;">This link will expire in <strong>10 minutes</strong>.</p>
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+          <p style="font-size: 12px; color: #999;">If you did not request this quick login, please ignore this email.</p>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error("Error sending quick login link:", error);
+    throw new Error("Failed to send quick login link");
+  }
+}
+
+
+
 async function sendTelegramLink(link, receiver) {
   try {
     const info = await transporter.sendMail({

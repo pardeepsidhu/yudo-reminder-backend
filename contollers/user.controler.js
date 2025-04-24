@@ -1,8 +1,9 @@
 import dotenv from 'dotenv'
 import User from '../models/user.model.js'
-import { sendOtpFun, sendTelegramLink } from './email.contoller.js';
+import { sendOtpFun, sendQuickLoginLink, sendResetPasswordLink, sendTelegramLink } from './email.contoller.js';
 import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken"
+import mongoose from 'mongoose';
 dotenv.config("../.env")
 
 
@@ -142,4 +143,168 @@ const updateProfile = async (req, res) => {
     }
   };
 
-export {sendOtp,verifyOtp,login,getProfile,updateProfile}
+
+  const resetPasswordLink = async (req, res) => {
+    try {
+      const email = req.user?.email || req.query?.email;
+      console.log(req.user)
+      console.log(email)
+      if (!email) {
+        return res.status(401).send({ error: "Unauthorized user!" });
+      }
+      
+      // Find user by email
+      const user = await User.findOne({ email });
+      
+      if (!user) {
+        return res.status(401).send({ error: "Unauthorized user!" });
+      }
+      
+      const resetId = user._id;
+      console.log(resetId+" yhi ")
+      
+      const token = jwt.sign(
+        {
+          resetId,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m' }
+      );
+      // Update user with reset info
+      user.resetId = resetId;
+      await user.save();
+  
+      // Generate reset link
+      const resetLink = `https://yudo-scheduler.vercel.app/login/?resetId=${token}`;
+      
+      await sendResetPasswordLink(resetLink,user.email);
+      // Send success response with reset link
+      res.status(200).send({ 
+        message: "Password reset link generated successfully", 
+      });
+      
+    } catch (error) {
+      console.log(error);
+      res.status(400).send({ error: "Some error occurred while generating password reset link!" });
+    }
+  };
+
+
+  const resetPassword = async (req, res) => {
+    try {
+      const token = req.query.resetId;
+      const newPassword = req.body.password;
+  
+      // 1. Verify JWT and check expiry
+      const data = jwt.verify(token, process.env.JWT_SECRET); // Throws error if expired
+      const userId = data.resetId;
+  console.log(data)
+      // 2. Find the user by ID
+      console.log(userId)
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+  
+      // 3. Hash the new password
+    
+      const hashedPassword = await bcrypt.hash(newPassword, 8);
+  
+      // 4. Update the user's password
+      user.password = hashedPassword;
+      await user.save();
+  
+      // 5. Send response
+      res.status(200).json({ message: "Password has been successfully reset." });
+    } catch (error) {
+      console.error(error);
+      if (error.name === 'TokenExpiredError') {
+        return res.status(400).json({ error: "Reset link has expired." });
+      }
+      res.status(400).json({ error: "Some error occurred while resetting password!" });
+    }
+  };
+
+
+
+  const quickLoginLink = async (req, res) => {
+    try {
+      // Extract email from authenticated user or query params
+      const email = req.body.email
+      console.log(email);
+  
+      if (!email) {
+        return res.status(401).send({ error: "Unauthorized user!" });
+      }
+  
+      // Find user by email
+      const user = await User.findOne({ email });
+  
+      if (!user) {
+        return res.status(401).send({ error: "Unauthorized user!" });
+      }
+  
+      const token = jwt.sign(
+        { userId: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '10m' } // Token valid for 10 minutes
+      );
+  
+      // Optional: save login token or flag if needed
+      
+  
+      // Generate quick login link
+      const quickLoginLink = `https://yudo-scheduler.vercel.app/quick-login?token=${token}`;
+  
+      // Send quick login email
+      console.log("user email : "+user.email)
+      const info = await sendQuickLoginLink(quickLoginLink, user.email);
+console.log(info)
+  
+      // Respond with success message
+      res.status(200).send({
+        message: "Quick login link generated successfully!",
+      });
+    } catch (error) {
+      console.error("Error generating quick login link:", error);
+      res.status(400).send({
+        error: "Some error occurred while generating quick login link!",
+      });
+    }
+  };
+  
+  const quickLogin = async (req, res) => {
+    try {
+      const token = req.query.token;
+  
+      if (!token) {
+        return res.status(400).json({ error: "Token is required." });
+      }
+  
+      // 1. Verify JWT and check expiry
+      const data = jwt.verify(token, process.env.JWT_SECRET); // Throws if expired
+      console.log(data)
+      const userId = data.userId;
+      console.log("Decoded Token:", data);
+  
+      // 2. Find user by ID
+      let user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+      user = user.toObject()
+      delete user.password;
+    
+      const loginToken = jwt.sign(user,process.env.JWT_SECRET);
+  
+    
+      res.status(200).json({token: loginToken});
+    } catch (error) {
+      console.error("Quick login error:", error);
+      if (error.name === "TokenExpiredError") {
+        return res.status(400).json({ error: "Login link has expired." });
+      }
+      res.status(400).json({ error: "Some error occurred while logging in!" });
+    }
+  };
+export {sendOtp,verifyOtp,login,getProfile,updateProfile,resetPasswordLink,resetPassword ,quickLoginLink,quickLogin}
