@@ -4,6 +4,7 @@ import { sendOtpFun, sendQuickLoginLink, sendResetPasswordLink, sendTelegramLink
 import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken"
 import mongoose from 'mongoose';
+import { createNotification } from './notification.controller.js';
 dotenv.config("../.env")
 
 
@@ -64,6 +65,15 @@ const verifyOtp = async (req, res) => {
         user = user.toObject();
         delete user.password;
         let token = jwt.sign(user, process.env.JWT_SECRET);
+
+        let notificationData = {
+          title: 'Telegram email sent',
+          type: 'telegram',
+          description: 'You have successfuly recieved telegram conection link , Please check your email inbox ,  Stay updated a keep connected with yudo-scheduler',
+          user: user._id
+        }
+        await createNotification(notificationData);
+
         return res.send({ token });
 
     } catch (error) {
@@ -83,6 +93,13 @@ const login = async (req,res)=>{
         let compairPassword = await bcrypt.compare(password,user.password);
         if(!compairPassword) return res.status(404).send({error:"email or password is wrong !"})
         user = user.toObject();
+        let notificationData = {
+          title: 'Logged in successfuly',
+          type: 'yudo',
+          description: 'Welcome back , You have successfuly logged in with yudo-scheduler ,  Stay updated a keep connected with yudo-scheduler',
+          user: user._id
+        }
+        await createNotification(notificationData);
         delete user.password;
         let token = jwt.sign(user,process.env.JWT_SECRET)
         return res.send({token})
@@ -161,8 +178,7 @@ const updateProfile = async (req, res) => {
       }
       
       const resetId = user._id;
-      console.log(resetId+" yhi ")
-      
+   
       const token = jwt.sign(
         {
           resetId,
@@ -170,14 +186,20 @@ const updateProfile = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '10m' }
       );
-      // Update user with reset info
-      user.resetId = resetId;
-      await user.save();
+     
   
       // Generate reset link
       const resetLink = `https://yudo-scheduler.vercel.app/login/?resetId=${token}`;
       
       await sendResetPasswordLink(resetLink,user.email);
+
+      let notificationData = {
+        title: 'Change password email sent',
+        type: 'auth',
+        description: 'You have successfuly recieved reset password link , Please check your email inbox and insure it will expire in 10 minutes  ,  Stay updated a keep connected with yudo-scheduler',
+        user: user._id
+      }
+      await createNotification(notificationData);
       // Send success response with reset link
       res.status(200).send({ 
         message: "Password reset link generated successfully", 
@@ -214,7 +236,14 @@ const updateProfile = async (req, res) => {
       user.password = hashedPassword;
       await user.save();
   
-      // 5. Send response
+      let notificationData = {
+        title: 'Change password email sent',
+        type: 'auth',
+        description: 'You have successfuly reset your yudo-scheduler password  ,  Stay updated a keep connected with yudo-scheduler',
+        user: user._id
+      }
+      await createNotification(notificationData);
+
       res.status(200).json({ message: "Password has been successfully reset." });
     } catch (error) {
       console.error(error);
@@ -258,10 +287,11 @@ const updateProfile = async (req, res) => {
   
       // Send quick login email
       console.log("user email : "+user.email)
-      const info = await sendQuickLoginLink(quickLoginLink, user.email);
-console.log(info)
+     await sendQuickLoginLink(quickLoginLink, user.email);
+
   
-      // Respond with success message
+
+
       res.status(200).send({
         message: "Quick login link generated successfully!",
       });
@@ -297,7 +327,14 @@ console.log(info)
     
       const loginToken = jwt.sign(user,process.env.JWT_SECRET);
   
-    
+      let notificationData = {
+        title: 'Logged in successfuly',
+        type: 'yudo',
+        description: 'Welcome back , You have successfuly logged in with yudo-scheduler using quick login link ,  Stay updated a keep connected with yudo-scheduler',
+        user: user._id
+      }
+      await createNotification(notificationData);
+      
       res.status(200).json({token: loginToken});
     } catch (error) {
       console.error("Quick login error:", error);

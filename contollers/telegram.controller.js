@@ -3,6 +3,7 @@ import User from "../models/user.model.js"
 import dotenv from "dotenv"
 import axios from "axios";
 import { sendTelegramLink } from "./email.contoller.js";
+import { createNotification } from "./notification.controller.js";
 dotenv.config("../.env")
 
 const pollUpdates = async () => {
@@ -23,9 +24,6 @@ const pollUpdates = async () => {
             const _id = text.replace("/start", "").trim();
             if (!_id) continue; 
             await User.updateOne({_id},{$set:{telegram:chatId}})
-            // users[email] = chatId; // ✅ Store user
-
-            console.log(`✅ Registered: ${_id} -> ${chatId}`);
 
             // ✅ Send confirmation message
             await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
@@ -47,6 +45,13 @@ const telegramUpadate=async(req,res)=>{
         let email = req.user.email;
         const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(req.user._id)}`;
         await sendTelegramLink(link,email);
+        let notificationData = {
+            title: 'Telegram email sent',
+            type: 'telegram',
+            description: 'You have successfuly recieved telegram conection link , Please check your email inbox ,  Stay updated a keep connected with yudo-scheduler',
+            user: req.user._id
+          }
+          await createNotification(notificationData);
         res.send({message:"telegram link send successfuly !"})
     } catch (error) {
         console.log(error)

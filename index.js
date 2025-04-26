@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import userRouter from './routes/user.route.js'
 import emailRouter from "./routes/email.route.js"
 import taskRoute from "./routes/task.route.js"
+import notificationRoute from "./routes/notification.route.js"
 // import {sendMessage} from "./contollers/telegram.controller.js"
 import { pollUpdates } from "./contollers/telegram.controller.js"
 
@@ -27,6 +28,7 @@ app.get("/",(req,res)=>{
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/email",emailRouter)
 app.use("/api/v1/task",taskRoute)
+app.use("/api/v1/notification",notificationRoute)
 
 
 
