@@ -12,7 +12,7 @@ const generete = async(req,res)=>{
         if(!prompt) res.send({error:"Please Provide Required Prompt !"})
         const prompt2 = prompt+" write an email for me in  short give me in format of json {subject,message} never write any thing else give me always as format defined write nothing else reather than json object if time not defined consider as today it reminder email that will reminder user to it's given task in prompt";
         const result = await model.generateContent(prompt2);
-        const response = result.response.text().replace('```json','').replace('```','')
+        const response = result.response.text().replace('```json','').replace('```','').replace("Reminder:","")
         res.send(response)
     } catch (error) {
         res.status(400).send({error:"Some Error Accured While Generating Email !"})

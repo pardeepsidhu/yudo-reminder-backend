@@ -24,16 +24,33 @@ async function sendOtpFun(opt, receiver) {
     const info = await transporter.sendMail({
       from: process.env.EMAIL,
       to: receiver,
-      subject: "Your Yudo-Scheduler OTP",
-      text: `Your OTP for Yudo-Scheduler is ${opt}. Please don't share it with anyone.`,
+      subject: "Your Yudo Scheduler Verification Code",
+      text: `Your verification code for Yudo Scheduler is ${opt}. This code will expire shortly. Please don't share it with anyone.`,
       html: `
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; margin: auto; background-color: #f9f9f9;">
-          <h2 style="color: #4A90E2;">Yudo-Reminder OTP</h2>
-          <p style="font-size: 16px; color: #333;">Your One-Time Password (OTP) is:</p>
-          <p style="font-size: 22px; font-weight: bold; color: #2D89EF; background: #EAF2FF; padding: 10px; display: inline-block; border-radius: 5px;">${opt}</p>
-          <p style="font-size: 14px; color: #666; margin-top: 10px;">Please do not share this OTP with anyone. It is valid for a limited time.</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999;">If you did not request this OTP, please ignore this email.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #3498db; font-size: 28px; margin: 0;">Yudo Scheduler</h1>
+            <p style="color: #7f8c8d; font-size: 16px; margin-top: 5px;">Verification Code</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            <h2 style="color: #2c3e50; font-size: 22px; margin-top: 0; margin-bottom: 20px;">Hello,</h2>
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Please use the verification code below to complete your request:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="background-color: #e8f4fc; border: 1px dashed #3498db; border-radius: 6px; padding: 15px 20px; display: inline-block;">
+                <span style="font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; color: #2980b9; letter-spacing: 5px;">${opt}</span>
+              </div>
+            </div>
+            
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 5px;">This code will expire shortly and can only be used once.</p>
+            <p style="color: #e74c3c; font-size: 15px; line-height: 1.6; margin-top: 15px;"><strong>Important:</strong> Never share this code with anyone. The Yudo Scheduler team will never ask for your verification code.</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="color: #95a5a6; font-size: 14px;">© ${new Date().getFullYear()} Yudo Scheduler. All rights reserved.</p>
+            <p style="color: #95a5a6; font-size: 12px; margin-top: 10px;">This is an automated message, please do not reply.</p>
+          </div>
         </div>
       `,
     });
@@ -51,18 +68,31 @@ export async function sendResetPasswordLink(link, receiver) {
     const info = await transporter.sendMail({
       from: process.env.EMAIL,
       to: receiver,
-      subject: "Yudo-Scheduler Password Reset Link",
+      subject: "Yudo Scheduler - Password Reset",
       text: `Please click the following link to reset your password: ${link}. This link will expire in 10 minutes. If you didn't request a reset, please ignore this email.`,
       html: `
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 500px; margin: auto; background-color: #f9f9f9;">
-          <h2 style="color: #E74C3C;">Reset Your Password</h2>
-          <p style="font-size: 16px; color: #333;">Click the button below to reset your password:</p>
-          <p>
-            <a href="${link}" style="font-size: 18px; color: white; background-color: #E74C3C; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
-          </p>
-          <p style="font-size: 14px; color: #666; margin-top: 10px;">This link will expire in <strong>10 minutes</strong>.</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999;">If you did not request a password reset, please ignore this email.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #3498db; font-size: 28px; margin: 0;">Yudo Scheduler</h1>
+            <p style="color: #7f8c8d; font-size: 16px; margin-top: 5px;">Password Reset Request</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            <h2 style="color: #2c3e50; font-size: 22px; margin-top: 0; margin-bottom: 20px;">Hello,</h2>
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">We received a request to reset your password for your Yudo Scheduler account. Click the button below to create a new password.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}" style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block; transition: background-color 0.3s ease;">Reset Password</a>
+            </div>
+            
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 5px;">This link will expire in <strong>10 minutes</strong>.</p>
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6;">If you didn't request a password reset, you can safely ignore this email.</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="color: #95a5a6; font-size: 14px;">© ${new Date().getFullYear()} Yudo Scheduler. All rights reserved.</p>
+            <p style="color: #95a5a6; font-size: 12px; margin-top: 10px;">This is an automated message, please do not reply.</p>
+          </div>
         </div>
       `,
     });
@@ -78,18 +108,31 @@ export async function sendQuickLoginLink(link, receiver) {
     const info = await transporter.sendMail({
       from: process.env.EMAIL,
       to: receiver,
-      subject: "Yudo-Scheduler Quick Login Link",
-      text: `Click the following link to log in quickly to your account: ${link}. This link will expire in 10 minutes. If you didn’t request this, please ignore the email.`,
+      subject: "Yudo Scheduler - Quick Login Link",
+      text: `Click the following link to log in quickly to your account: ${link}. This link will expire in 10 minutes. If you didn't request this, please ignore the email.`,
       html: `
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 500px; margin: auto; background-color: #f9f9f9;">
-          <h2 style="color: #3498DB;">Quick Login</h2>
-          <p style="font-size: 16px; color: #333;">Click the button below to securely log in:</p>
-          <p>
-            <a href="${link}" style="font-size: 18px; color: white; background-color: #3498DB; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login Now</a>
-          </p>
-          <p style="font-size: 14px; color: #666; margin-top: 10px;">This link will expire in <strong>10 minutes</strong>.</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999;">If you did not request this quick login, please ignore this email.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #3498db; font-size: 28px; margin: 0;">Yudo Scheduler</h1>
+            <p style="color: #7f8c8d; font-size: 16px; margin-top: 5px;">Quick Login Access</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            <h2 style="color: #2c3e50; font-size: 22px; margin-top: 0; margin-bottom: 20px;">Hello,</h2>
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">You requested a quick login link for your Yudo Scheduler account. Click the button below to securely access your account.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}" style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block; transition: background-color 0.3s ease;">Log In Now</a>
+            </div>
+            
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 5px;">This link will expire in <strong>10 minutes</strong> for your security.</p>
+            <p style="color: #e74c3c; font-size: 15px; line-height: 1.6; margin-top: 15px;"><strong>Security Note:</strong> If you didn't request this login link, please ignore this email or contact support if you have concerns about your account security.</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="color: #95a5a6; font-size: 14px;">© ${new Date().getFullYear()} Yudo Scheduler. All rights reserved.</p>
+            <p style="color: #95a5a6; font-size: 12px; margin-top: 10px;">This is an automated message, please do not reply.</p>
+          </div>
         </div>
       `,
     });
@@ -106,17 +149,39 @@ async function sendTelegramLink(link, receiver) {
   try {
     const info = await transporter.sendMail({
       from: process.env.EMAIL,
-      to: receiver, 
-      subject: "Yudo-Sheduler Telegram Link",
-      text: `please clink the link ${link} to be updated through telegram as well. please delete this email for security reasons if you don't want .`,
+      to: receiver,
+      subject: "Yudo Scheduler - Connect to Telegram",
+      text: `Click the following link to connect your Yudo Scheduler account with Telegram: ${link}. For security, please delete this email after connecting if desired.`,
       html: `
-        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; margin: auto; background-color: #f9f9f9;">
-          <h2 style="color: #4A90E2;">Yudo Reminder Telegram Verificaton</h2>
-          <p style="font-size: 16px; color: #333;">your telegram bot link is : </p>
-          <p style="font-size: 22px; font-weight: bold; color: #2D89EF; background: #EAF2FF; padding: 10px; display: inline-block; border-radius: 5px;"><a href=${link}>telegram <a/></p>
-          <p style="font-size: 14px; color: #666; margin-top: 10px;">please delete this email for security reasons if you don't want .</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-          <p style="font-size: 12px; color: #999;">If you did not request this Email, please ignore this email.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #3498db; font-size: 28px; margin: 0;">Yudo Scheduler</h1>
+            <p style="color: #7f8c8d; font-size: 16px; margin-top: 5px;">Telegram Connection</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            <h2 style="color: #2c3e50; font-size: 22px; margin-top: 0; margin-bottom: 20px;">Hello,</h2>
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Click the button below to connect your account with Telegram and receive updates:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${link}" style="background-color: #0088cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px; display: inline-block; transition: background-color 0.3s ease;">
+                <span style="vertical-align: middle;">Connect to Telegram</span>
+                <span style="display: inline-block; vertical-align: middle; margin-left: 10px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm-2.5 14.5l7.5-3.5-7.5-3.5v2.5l4.5 1-4.5 1v2.5z"/>
+                  </svg>
+                </span>
+              </a>
+            </div>
+            
+            <p style="color: #34495e; font-size: 16px; line-height: 1.6; margin-bottom: 5px;">Connecting to Telegram allows you to receive notifications and updates about your schedule directly through the Telegram messaging app.</p>
+            <p style="color: #e74c3c; font-size: 15px; line-height: 1.6; margin-top: 15px;"><strong>Note:</strong> For security reasons, you may want to delete this email after connecting your account.</p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="color: #95a5a6; font-size: 14px;">© ${new Date().getFullYear()} Yudo Scheduler. All rights reserved.</p>
+            <p style="color: #95a5a6; font-size: 12px; margin-top: 10px;">This is an automated message, please do not reply.</p>
+          </div>
         </div>
       `,
     });
@@ -149,12 +214,12 @@ const scheduleEmail = async (req, res) => {
           text: body,
           html: `
             <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; margin: auto; background-color: #f9f9f9;">
-              <h2 style="color: #4A90E2;">Yudo-Reminder</h2>
+              <h2 style="color: #4A90E2;">Yudo-Scheduler</h2>
               <p style="font-size: 16px; color: #333;">You have a scheduled reminder:</p>
               <p style="font-size: 18px; font-weight: bold; color: #2D89EF; background: #EAF2FF; padding: 10px; display: inline-block; border-radius: 5px;">
                 ${body}
               </p>
-              <p style="font-size: 14px; color: #666; margin-top: 10px;">Stay on track with Yudo-Reminder.</p>
+              <p style="font-size: 14px; color: #666; margin-top: 10px;">Stay on track with Yudo-Scheduler.</p>
               <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
               <p style="font-size: 12px; color: #999;">If you did not schedule this reminder, please ignore this email.</p>
             </div>
@@ -165,7 +230,7 @@ const scheduleEmail = async (req, res) => {
         await Email.findOneAndUpdate({ jobId }, { status: 'sent' });
 
         if(telegram) {
-          let telBody = `<strong>Reminder From Yudo-Reminder</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${body}`;
+          let telBody = `<strong>Reminder From Yudo-Scheduler</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${body}`;
 
           await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
             chat_id: telegram,
@@ -325,12 +390,12 @@ const updateSchedule = async (req, res) => {
           text: body || email.body,
           html: `
             <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; margin: auto; background-color: #f9f9f9;">
-              <h2 style="color: #4A90E2;">Yudo-Reminder</h2>
+              <h2 style="color: #4A90E2;">Yudo-Scheduler</h2>
               <p style="font-size: 16px; color: #333;">You have a scheduled reminder:</p>
               <p style="font-size: 18px; font-weight: bold; color: #2D89EF; background: #EAF2FF; padding: 10px; display: inline-block; border-radius: 5px;">
                 ${body || email.body}
               </p>
-              <p style="font-size: 14px; color: #666; margin-top: 10px;">Stay on track with Yudo-Reminder.</p>
+              <p style="font-size: 14px; color: #666; margin-top: 10px;">Stay on track with Yudo-Scheduler.</p>
               <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
               <p style="font-size: 12px; color: #999;">If you did not schedule this reminder, please ignore this email.</p>
             </div>
@@ -343,7 +408,7 @@ const updateSchedule = async (req, res) => {
         // Send telegram notification if enabled
         let user = await User.findOne({ email: email.to });
         if (user && user.telegram) {
-          let telBody = `<strong>Reminder From Yudo-Reminder</strong>\n<strong>Subject</strong> : ${subject || email.subject} \n<strong>Message</strong> : ${body || email.body}`;
+          let telBody = `<strong>Reminder From Yudo-Scheduler</strong>\n<strong>Subject</strong> : ${subject || email.subject} \n<strong>Message</strong> : ${body || email.body}`;
 
           await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
             chat_id: user.telegram,

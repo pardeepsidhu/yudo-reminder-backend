@@ -39,5 +39,5 @@ app.use("/api/v1/task",taskRoute)
 app.listen(5000,()=>{
     console.log("your app is running on port 5000");
     config()
-    setInterval(pollUpdates,6000);
+    setInterval(pollUpdates,12000);
 })
