@@ -239,7 +239,7 @@ const updateProfile = async (req, res) => {
       let notificationData = {
         title: 'Change password email sent',
         type: 'auth',
-        description: 'You have successfuly reset your yudo-scheduler password  ,  Stay updated a keep connected with yudo-scheduler',
+        description: 'Your password has been reset successfuly ,  Stay updated a keep connected with yudo-scheduler',
         user: user._id
       }
       await createNotification(notificationData);

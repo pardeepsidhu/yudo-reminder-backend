@@ -28,14 +28,14 @@ const pollUpdates = async () => {
             // ✅ Send confirmation message
             await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
                 chat_id: chatId,
-                text: "✅ You are successfuly registered ! with YUDO REMIDER . now you will revieve you all schedules through telegram as well ...",
+                text: "✅ You are successfuly registered ! with YUDO-Scheduler . now you will revieve you all schedules through telegram as well ...",
             });
 
             lastUpdateId = update.update_id;
         }
     } catch (error) {
         console.log(error)
-        console.error("❌ Polling Error:", error.message);
+        console.error("❌ Polling Error:");
     }
 };
 
