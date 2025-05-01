@@ -55,7 +55,6 @@ async function sendOtpFun(opt, receiver) {
       `,
     });
 
-    console.log("Email sent: ", info.messageId);
     return info;
   } catch (error) {
     console.error("Error sending OTP:", error);
@@ -237,7 +236,6 @@ const scheduleEmail = async (req, res) => {
             text: telBody,
             parse_mode: 'HTML'  
           });
-          console.log("Telegram notification sent");
         }
       } catch (err) {
         console.error("Error in scheduled job:", err);
@@ -321,14 +319,14 @@ const getAll = async (req, res) => {
 
     // Get total count for pagination
     const total = await Email.countDocuments(query);
-    // console.log(emails)
+
 
     res.send({
       total,
       emails
     });
   } catch (error) {
-    console.log(error);
+
     res.status(400).send({ error: "An error occurred while fetching reminders!" });
   }
 };

@@ -17,10 +17,9 @@ const pollUpdates = async () => {
 
             const chatId = update.message.chat.id;
             const text = update.message.text?.trim();
-            // console.log(chatId+" "+text)
-            // ❌ Ignore messages that are NOT "/start <email>"
+           
             if (!text.startsWith("/start")) continue;
-            // console.log(chatId+" "+text+" fff")
+            
             const _id = text.replace("/start", "").trim();
             if (!_id) continue; 
             await User.updateOne({_id},{$set:{telegram:chatId}})
@@ -34,7 +33,7 @@ const pollUpdates = async () => {
             lastUpdateId = update.update_id;
         }
     } catch (error) {
-        console.log(error)
+       
         console.error("❌ Polling Error:");
     }
 };
@@ -54,7 +53,7 @@ const telegramUpadate=async(req,res)=>{
           await createNotification(notificationData);
         res.send({message:"telegram link send successfuly !"})
     } catch (error) {
-        console.log(error)
+   
         res.status(400).send({error:"some error accured while sending telgram link !"})
     }
 }

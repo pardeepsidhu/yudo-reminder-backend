@@ -32,9 +32,6 @@ app.use("/api/v1/notification",notificationRoute)
 
 
 
-// sendTelegramMessage("5966320441","hhhff","hhfhf").then(
-//     console.log("telegram message sent !")
-// )
 
 
 

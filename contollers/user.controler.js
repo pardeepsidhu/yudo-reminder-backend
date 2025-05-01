@@ -61,7 +61,6 @@ const verifyOtp = async (req, res) => {
         const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(user._id)}`;
         await sendTelegramLink(link,email);
         user = await User.findOne({ email }); 
-        // console.log("this i suser "+ user)
         user = user.toObject();
         delete user.password;
         let token = jwt.sign(user, process.env.JWT_SECRET);
@@ -112,7 +111,6 @@ const login = async (req,res)=>{
 const getProfile=async(req,res)=>{
     try {
         let userId = req.user._id;
-        console.log(userId);
         if(!userId){
             return res.status(401).send({error:"unauthorized user !"})
         }
@@ -131,9 +129,7 @@ const getProfile=async(req,res)=>{
 const updateProfile = async (req, res) => {
     try {
       let userId = req.user._id;
-      console.log("hello");
       const { name, profile } = req.body;
-      console.log(name, profile);
       
       if (!userId) {
         return res.status(401).send({ error: "unauthorized user!" });
@@ -164,8 +160,6 @@ const updateProfile = async (req, res) => {
   const resetPasswordLink = async (req, res) => {
     try {
       const email = req.user?.email || req.query?.email;
-      console.log(req.user)
-      console.log(email)
       if (!email) {
         return res.status(401).send({ error: "Unauthorized user!" });
       }
@@ -220,9 +214,7 @@ const updateProfile = async (req, res) => {
       // 1. Verify JWT and check expiry
       const data = jwt.verify(token, process.env.JWT_SECRET); // Throws error if expired
       const userId = data.resetId;
-  console.log(data)
-      // 2. Find the user by ID
-      console.log(userId)
+
       const user = await User.findById(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found." });
@@ -260,7 +252,6 @@ const updateProfile = async (req, res) => {
     try {
       // Extract email from authenticated user or query params
       const email = req.body.email
-      console.log(email);
   
       if (!email) {
         return res.status(401).send({ error: "Unauthorized user!" });
@@ -286,7 +277,6 @@ const updateProfile = async (req, res) => {
       const quickLoginLink = `https://yudo-scheduler.vercel.app/quick-login?token=${token}`;
   
       // Send quick login email
-      console.log("user email : "+user.email)
      await sendQuickLoginLink(quickLoginLink, user.email);
 
   
@@ -313,10 +303,7 @@ const updateProfile = async (req, res) => {
   
       // 1. Verify JWT and check expiry
       const data = jwt.verify(token, process.env.JWT_SECRET); // Throws if expired
-      console.log(data)
       const userId = data.userId;
-      console.log("Decoded Token:", data);
-  
       // 2. Find user by ID
       let user = await User.findById(userId);
       if (!user) {
