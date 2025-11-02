@@ -35,6 +35,8 @@ const getTasks = async (req, res) => {
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip) || 0;
     const priority = req.query.priority;
+    const startDate = req.query.startDate; // Expected format: ISO string or Date
+    const endDate = req.query.endDate;     // Expected format: ISO string or Date
     
     // Build the base query
     const query = { user };
@@ -43,18 +45,35 @@ const getTasks = async (req, res) => {
     if (priority && ['high', 'normal', 'low'].includes(priority)) {
       query.priority = priority;
     }
-    let  tasks;
-    // Execute the query with pagination
-    if(limit){
-      tasks = await Task.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    
+    // Add date filtering if provided
+    if (startDate || endDate) {
+      query.createdAt = {};
+      
+      if (startDate) {
+        // Filter tasks created on or after startDate
+        query.createdAt.$gte = new Date(startDate);
+      }
+      
+      if (endDate) {
+        // Filter tasks created on or before endDate (end of day)
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999); // Set to end of day
+        query.createdAt.$lte = endOfDay;
+      }
     }
-    else{
+    
+    let tasks;
+    // Execute the query with pagination
+    if (limit) {
       tasks = await Task.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip);
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+    } else {
+      tasks = await Task.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip);
     }
     
     // Get total count for pagination
@@ -140,10 +159,16 @@ const deleteTask = async (req, res) => {
 const getTasksByTimeframe = async (req, res) => {
   try {
     const user = req.user._id;
-    const timeframe = req.params.timeframe; // 'week' or 'month' (for reference only)
+    const timeframe = req.params.timeframe; 
+    
+    // Pagination parameters
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
     
     // Get explicitly specified start and end dates from query parameters
     let startDate, endDate;
+    let query = { user };
     
     // Check if both startDate and endDate are provided
     if (req.query.startDate && req.query.endDate) {
@@ -163,7 +188,18 @@ const getTasksByTimeframe = async (req, res) => {
       if (endDate < startDate) {
         return res.status(400).json({ error: "End date cannot be before start date" });
       }
-    } else {
+      
+      // Add date filter to query
+      query.$or = [
+        // Tasks created within this timeframe
+        { createdAt: { $gte: startDate, $lte: endDate } },
+        // Tasks with time entries that overlap with this timeframe
+        { 
+          'time.stated': { $lte: endDate },
+          'time.ended': { $gte: startDate }
+        }
+      ];
+    } else if (timeframe === 'week' || timeframe === 'month') {
       // If dates are not explicitly provided, fallback to current period
       const today = new Date();
       
@@ -187,15 +223,10 @@ const getTasksByTimeframe = async (req, res) => {
         // End of current month
         endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         endDate.setHours(23, 59, 59, 999);
-      } else {
-        return res.status(400).json({ error: "Invalid timeframe. Use 'week' or 'month'" });
       }
-    }
-    
-    // Query for tasks with time entries within this date range
-    const tasks = await Task.find({
-      user: user,
-      $or: [
+      
+      // Add date filter to query
+      query.$or = [
         // Tasks created within this timeframe
         { createdAt: { $gte: startDate, $lte: endDate } },
         // Tasks with time entries that overlap with this timeframe
@@ -203,29 +234,61 @@ const getTasksByTimeframe = async (req, res) => {
           'time.stated': { $lte: endDate },
           'time.ended': { $gte: startDate }
         }
-      ]
-    }).sort({ createdAt: -1 });
+      ];
+    } else if (timeframe === 'all' || !timeframe) {
+      // If timeframe is 'all' or not provided, get all tasks (no date filter)
+      // query remains as { user } only
+      startDate = null;
+      endDate = null;
+    } else {
+      return res.status(400).json({ 
+        error: "Invalid timeframe. Use 'week', 'month', or 'all'" 
+      });
+    }
     
-    // Calculate task statistics
+    // Get total count for the query (before pagination)
+    const total = await Task.countDocuments(query);
+    
+    // Query for tasks with pagination
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    
+    // Calculate task statistics (for the filtered results, not paginated)
+    const allFilteredTasks = await Task.find(query).select('status priority');
+    
     const taskStats = {
-      total: tasks.length,
-      pending: tasks.filter(task => task.status === 'pending').length,
-      todo: tasks.filter(task => task.status === 'to do').length,
-      inProgress: tasks.filter(task => task.status === 'in progress').length,
-      done: tasks.filter(task => task.status === 'done').length,
+      total: total,
+      pending: allFilteredTasks.filter(task => task.status === 'pending').length,
+      todo: allFilteredTasks.filter(task => task.status === 'to do').length,
+      inProgress: allFilteredTasks.filter(task => task.status === 'in progress').length,
+      done: allFilteredTasks.filter(task => task.status === 'done').length,
       byPriority: {
-        high: tasks.filter(task => task.priority === 'high').length,
-        normal: tasks.filter(task => task.priority === 'normal').length,
-        low: tasks.filter(task => task.priority === 'low').length
+        high: allFilteredTasks.filter(task => task.priority === 'high').length,
+        normal: allFilteredTasks.filter(task => task.priority === 'normal').length,
+        low: allFilteredTasks.filter(task => task.priority === 'low').length
       }
     };
     
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+    
     res.json({
-      timeframe,
+      timeframe: timeframe || 'all',
       startDate,
       endDate,
       tasks,
-      stats: taskStats
+      stats: taskStats,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        limit,
+        total,
+        hasMore,
+        count: tasks.length
+      }
     });
   } catch (error) {
     console.error(`Error fetching tasks for time period:`, error);
