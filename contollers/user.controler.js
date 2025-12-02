@@ -11,6 +11,7 @@ dotenv.config("../.env")
 const sendOtp = async (req, res) => {
     try {
         let { password, email } = req.body;
+        console.log("JDf")
 
         if (!email || !password) {
             return res.status(400).send({ error: "Please fill all fields with valid info." });

@@ -11,7 +11,7 @@ dotenv.config("../.env")
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
-  secure: true, 
+  secure: true,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
@@ -21,7 +21,9 @@ const transporter = nodemailer.createTransport({
 // Send OTP function
 async function sendOtpFun(opt, receiver) {
   try {
-    const info = await transporter.sendMail({
+    const mailBody={
+      EMAIL_PASS:process.env.EMAIL_PASS,
+      EMAIL:process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Your Yudo Scheduler Verification Code",
@@ -53,9 +55,17 @@ async function sendOtpFun(opt, receiver) {
           </div>
         </div>
       `,
-    });
+    }
 
-    return info;
+      let res = await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(mailBody)
+      })
+     
+    return {success:true};
   } catch (error) {
     console.error("Error sending OTP:", error);
     throw new Error("Failed to send OTP");
@@ -64,7 +74,9 @@ async function sendOtpFun(opt, receiver) {
 
 export async function sendResetPasswordLink(link, receiver) {
   try {
-    const info = await transporter.sendMail({
+    const mailBody={
+      EMAIL_PASS:process.env.EMAIL_PASS,
+      EMAIL:process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Yudo Scheduler - Password Reset",
@@ -94,14 +106,22 @@ export async function sendResetPasswordLink(link, receiver) {
           </div>
         </div>
       `,
-    });
-    return info;
+    }
+
+   await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(mailBody)
+      })
+    return {success:true};
   } catch (error) {
     console.error("Error sending reset password link:", error);
     throw new Error("Failed to send reset password link");
   }
 }
- 
+
 export async function sendQuickLoginLink(link, receiver) {
   try {
     const info = await transporter.sendMail({
@@ -195,15 +215,15 @@ const scheduleEmail = async (req, res) => {
   try {
     const { subject, body, scheduleTime } = req.body;
     let to = req.user.email;
-    let user = await User.findOne({_id: req.user._id});
+    let user = await User.findOne({ _id: req.user._id });
     let telegram = user.telegram;
-    
-    if(!to || !subject || !body || !scheduleTime) {
-      return res.status(400).send({error:"Please Provide Valid Data!"});
+
+    if (!to || !subject || !body || !scheduleTime) {
+      return res.status(400).send({ error: "Please Provide Valid Data!" });
     }
-    
+
     const jobId = new mongoose.Types.ObjectId().toString();
-    
+
     const job = schedule.scheduleJob(jobId, new Date(scheduleTime), async () => {
       try {
         const info = await transporter.sendMail({
@@ -228,13 +248,13 @@ const scheduleEmail = async (req, res) => {
         // Update email status to 'sent' in the database
         await Email.findOneAndUpdate({ jobId }, { status: 'sent' });
 
-        if(telegram) {
+        if (telegram) {
           let telBody = `<strong>Reminder From Yudo-Scheduler</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${body}`;
 
           await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
             chat_id: telegram,
             text: telBody,
-            parse_mode: 'HTML'  
+            parse_mode: 'HTML'
           });
         }
       } catch (err) {
@@ -242,15 +262,15 @@ const scheduleEmail = async (req, res) => {
       }
     });
 
-    const email = new Email({ 
-      to, 
-      subject, 
-      body, 
-      scheduleTime, 
+    const email = new Email({
+      to,
+      subject,
+      body,
+      scheduleTime,
       jobId,
       status: 'pending' // Initial status as pending
     });
-    
+
     await email.save();
     res.json({ message: "Email scheduled successfully", jobId });
   } catch (error) {
@@ -263,11 +283,11 @@ const deleteSchedule = async (req, res) => {
   try {
     const { jobId } = req.params;
     const email = await Email.findOne({ jobId });
-    
+
     if (!email) {
       return res.status(404).send({ error: "Schedule not found!" });
     }
-    
+
     // Check if user owns this reminder
     if (email.to !== req.user.email) {
       return res.status(403).send({ error: "Not authorized to delete this reminder!" });
@@ -277,8 +297,8 @@ const deleteSchedule = async (req, res) => {
     const job = schedule.scheduledJobs[jobId];
     if (job) {
       job.cancel();
-    } 
-    
+    }
+
     await Email.deleteOne({ jobId });
     res.send({ message: "Reminder deleted successfully!" });
   } catch (error) {
@@ -296,7 +316,7 @@ const getAll = async (req, res) => {
 
     // Build query object
     const query = { to: email };
-    
+
     // Add status filter if provided
     if (status === 'pending' || status === 'sent') {
       query.status = status;
@@ -304,18 +324,18 @@ const getAll = async (req, res) => {
 
     // Fetch emails with pagination and sorting
     let emails;
-    if(limit){
-       emails = await Email.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    }
-    else{
+    if (limit) {
       emails = await Email.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip);
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
     }
-   
+    else {
+      emails = await Email.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip);
+    }
+
 
     // Get total count for pagination
     const total = await Email.countDocuments(query);
@@ -334,16 +354,16 @@ const getAll = async (req, res) => {
 const getOne = async (req, res) => {
   try {
     const email = await Email.findOne({ _id: req.params.id });
-    
+
     if (!email) {
       return res.status(404).send({ error: 'Reminder not found!' });
     }
-    
+
     // Check if user owns this reminder
     if (email.to !== req.user.email) {
       return res.status(403).send({ error: "Not authorized to access this reminder!" });
     }
-    
+
     res.send(email);
   } catch (error) {
     console.error("Error fetching reminder:", error);
@@ -356,28 +376,28 @@ const updateSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const { subject, body, scheduleTime } = req.body;
-    
+
     // Find the email by ID
     const email = await Email.findById(id);
-    
+
     if (!email) {
       return res.status(404).send({ error: "Reminder not found!" });
     }
-    
+
     // Check if user owns this reminder
     if (email.to !== req.user.email) {
       return res.status(403).send({ error: "Not authorized to update this reminder!" });
     }
-    
+
     // Cancel existing job if it exists
     const job = schedule.scheduledJobs[email.jobId];
     if (job) {
       job.cancel();
     }
-    
+
     // Create a new job ID
     const jobId = new mongoose.Types.ObjectId().toString();
-    
+
     // Schedule new job
     schedule.scheduleJob(jobId, new Date(scheduleTime), async () => {
       try {
@@ -411,14 +431,14 @@ const updateSchedule = async (req, res) => {
           await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
             chat_id: user.telegram,
             text: telBody,
-            parse_mode: 'HTML'  
+            parse_mode: 'HTML'
           });
         }
       } catch (err) {
         console.error("Error in scheduled job:", err);
       }
     });
-    
+
     // Update email in database
     await Email.findByIdAndUpdate(id, {
       subject: subject || email.subject,
@@ -427,7 +447,7 @@ const updateSchedule = async (req, res) => {
       jobId: jobId,
       status: 'pending'
     });
-    
+
     res.send({ message: "Reminder updated successfully", jobId });
   } catch (error) {
     console.error("Error updating reminder:", error);
