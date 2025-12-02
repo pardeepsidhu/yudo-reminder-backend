@@ -236,18 +236,29 @@ async function sendTelegramLink(link, receiver) {
 const scheduleEmail = async (req, res) => {
   try {
     const { subject, body, scheduleTime } = req.body;
+
     let to = req.user.email;
-    let user = await User.findOne({ _id: req.user._id });
-    let telegram = user.telegram;
+    let user = await User.findById(req.user._id);
+    let telegram = user?.telegram;
+
+    console.log("Received scheduleTime:", scheduleTime);
 
     if (!to || !subject || !body || !scheduleTime) {
-      return res.status(400).send({ error: "Please Provide Valid Data!" });
+      return res.status(400).json({ error: "Please provide valid data!" });
     }
+
+    // ✅ Convert scheduleTime to a proper Date object in IST (Asia/Kolkata)
+    // This ensures consistent scheduling even if the server runs in UTC
+    const localDate = moment.tz(scheduleTime, "Asia/Kolkata").toDate();
+    console.log("Converted local schedule time:", localDate);
 
     const jobId = new mongoose.Types.ObjectId().toString();
 
-    const job = schedule.scheduleJob(jobId, new Date(scheduleTime), async () => {
+    // ✅ Schedule the job at the converted local time
+    const job = schedule.scheduleJob(jobId, localDate, async () => {
       try {
+        console.log("Executing scheduled job:", jobId);
+
         const mailBody = {
           EMAIL_PASS: process.env.EMAIL_PASS,
           EMAIL: process.env.EMAIL,
@@ -267,48 +278,51 @@ const scheduleEmail = async (req, res) => {
               <p style="font-size: 12px; color: #999;">If you did not schedule this reminder, please ignore this email.</p>
             </div>
           `,
-        }
+        };
 
+        // Send email through your secondary app
         await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
           method: "POST",
-          headers: {
-            "content-type": "application/json"
-          },
-          body: JSON.stringify(mailBody)
-        })
-        // Update email status to 'sent' in the database
-        await Email.findOneAndUpdate({ jobId }, { status: 'sent' });
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mailBody),
+        });
 
+        // Update status in DB
+        await Email.findOneAndUpdate({ jobId }, { status: "sent" });
+
+        // Send Telegram message (if user connected)
         if (telegram) {
-          let telBody = `<strong>Reminder From Yudo-Scheduler</strong>\n<strong>Subject</strong> : ${subject} \n<strong>Message</strong> : ${body}`;
-
+          const telBody = `<strong>Reminder From Yudo-Scheduler</strong>\n<strong>Subject</strong>: ${subject}\n<strong>Message</strong>: ${body}`;
           await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
             chat_id: telegram,
             text: telBody,
-            parse_mode: 'HTML'
+            parse_mode: "HTML",
           });
         }
+
+        console.log("Job completed successfully:", jobId);
       } catch (err) {
         console.error("Error in scheduled job:", err);
       }
     });
 
+    // Save scheduled email in DB
     const email = new Email({
       to,
       subject,
       body,
-      scheduleTime,
+      scheduleTime: localDate,
       jobId,
-      status: 'pending' // Initial status as pending
+      status: "pending",
     });
 
     await email.save();
     res.json({ message: "Email scheduled successfully", jobId });
   } catch (error) {
     console.error("Error scheduling email:", error);
-    res.status(500).send({ error: "Failed to schedule email. Please try again." });
+    res.status(500).json({ error: "Failed to schedule email. Please try again." });
   }
-}
+};
 
 const deleteSchedule = async (req, res) => {
   try {
