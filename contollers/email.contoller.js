@@ -21,9 +21,9 @@ const transporter = nodemailer.createTransport({
 // Send OTP function
 async function sendOtpFun(opt, receiver) {
   try {
-    const mailBody={
-      EMAIL_PASS:process.env.EMAIL_PASS,
-      EMAIL:process.env.EMAIL,
+    const mailBody = {
+      EMAIL_PASS: process.env.EMAIL_PASS,
+      EMAIL: process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Your Yudo Scheduler Verification Code",
@@ -57,15 +57,15 @@ async function sendOtpFun(opt, receiver) {
       `,
     }
 
-      let res = await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json"
-        },
-        body: JSON.stringify(mailBody)
-      })
-     
-    return {success:true};
+    let res = await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(mailBody)
+    })
+
+    return { success: true };
   } catch (error) {
     console.error("Error sending OTP:", error);
     throw new Error("Failed to send OTP");
@@ -74,9 +74,9 @@ async function sendOtpFun(opt, receiver) {
 
 export async function sendResetPasswordLink(link, receiver) {
   try {
-    const mailBody={
-      EMAIL_PASS:process.env.EMAIL_PASS,
-      EMAIL:process.env.EMAIL,
+    const mailBody = {
+      EMAIL_PASS: process.env.EMAIL_PASS,
+      EMAIL: process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Yudo Scheduler - Password Reset",
@@ -108,14 +108,14 @@ export async function sendResetPasswordLink(link, receiver) {
       `,
     }
 
-   await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json"
-        },
-        body: JSON.stringify(mailBody)
-      })
-    return {success:true};
+    await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(mailBody)
+    })
+    return { success: true };
   } catch (error) {
     console.error("Error sending reset password link:", error);
     throw new Error("Failed to send reset password link");
@@ -124,7 +124,9 @@ export async function sendResetPasswordLink(link, receiver) {
 
 export async function sendQuickLoginLink(link, receiver) {
   try {
-    const info = await transporter.sendMail({
+    const mailBody = {
+      EMAIL_PASS: process.env.EMAIL_PASS,
+      EMAIL: process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Yudo Scheduler - Quick Login Link",
@@ -154,8 +156,17 @@ export async function sendQuickLoginLink(link, receiver) {
           </div>
         </div>
       `,
-    });
-    return info;
+    }
+
+    await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(mailBody)
+    })
+    return { success: true };
+    // return info;
   } catch (error) {
     console.error("Error sending quick login link:", error);
     throw new Error("Failed to send quick login link");
@@ -166,7 +177,9 @@ export async function sendQuickLoginLink(link, receiver) {
 
 async function sendTelegramLink(link, receiver) {
   try {
-    const info = await transporter.sendMail({
+    const mailBody = {
+      EMAIL_PASS: process.env.EMAIL_PASS,
+      EMAIL: process.env.EMAIL,
       from: process.env.EMAIL,
       to: receiver,
       subject: "Yudo Scheduler - Connect to Telegram",
@@ -203,8 +216,17 @@ async function sendTelegramLink(link, receiver) {
           </div>
         </div>
       `,
-    });
-    return info;
+    }
+
+    await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(mailBody)
+    })
+    return { success: true };
+
   } catch (error) {
     console.error("Error sending Telegram link:", error);
     throw new Error("Failed to send Telegram link");
@@ -226,7 +248,9 @@ const scheduleEmail = async (req, res) => {
 
     const job = schedule.scheduleJob(jobId, new Date(scheduleTime), async () => {
       try {
-        const info = await transporter.sendMail({
+        const mailBody = {
+          EMAIL_PASS: process.env.EMAIL_PASS,
+          EMAIL: process.env.EMAIL,
           from: process.env.EMAIL,
           to,
           subject,
@@ -243,8 +267,15 @@ const scheduleEmail = async (req, res) => {
               <p style="font-size: 12px; color: #999;">If you did not schedule this reminder, please ignore this email.</p>
             </div>
           `,
-        });
+        }
 
+        await fetch(`${process.env.SECOND_APP}/api/v1/sendmail`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify(mailBody)
+        })
         // Update email status to 'sent' in the database
         await Email.findOneAndUpdate({ jobId }, { status: 'sent' });
 
