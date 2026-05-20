@@ -16,8 +16,7 @@ import cors from "cors"
 
 const app = express();
 dotenv.config()
-// sk-20529d6502f445ef840cd5c623a8a9d3
-// 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
+
 app.use(express.json())
 app.use(cors())
 
@@ -29,9 +28,6 @@ app.use("/api/v1/user",userRouter)
 app.use("/api/v1/email",emailRouter)
 app.use("/api/v1/task",taskRoute)
 app.use("/api/v1/notification",notificationRoute)
-
-
-
 
 
 
