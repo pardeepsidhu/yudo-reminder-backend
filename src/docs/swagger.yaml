@@ -1,0 +1,1337 @@
+openapi: 3.0.0
+
+info:
+  title: Yudo Scheduler API
+  version: 1.0.0
+  description: Authentication and user management API for Yudo Scheduler
+
+servers:
+  - url: http://localhost:5000
+    description: Local server
+
+components:
+  securitySchemes:
+    auth-token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        user:
+          type: integer
+          example: 5
+
+        title:
+          type: string
+          example: Complete project documentation
+
+        description:
+          type: string
+          example: Finish Swagger and API documentation for backend
+
+        status:
+          type: string
+
+          enum:
+            - pending
+            - to do
+            - in progress
+            - done
+
+          example: pending
+
+        estimatedTime:
+          type: string
+          example: "2026-05-25T10:00:00.000Z"
+
+        time:
+          type: array
+
+          items:
+            type: object
+
+        priority:
+          type: string
+
+          enum:
+            - high
+            - normal
+            - low
+
+          example: normal
+
+        createdAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+        updatedAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+    TaskListResponse:
+      type: object
+      properties:
+        tasks:
+          type: array
+
+          items:
+            $ref: "#/components/schemas/Task"
+
+        total:
+          type: integer
+          example: 20
+
+        hasMore:
+          type: boolean
+          example: true
+
+    TaskTimeframeResponse:
+      type: object
+      properties:
+        timeframe:
+          type: string
+          example: week
+
+        startDate:
+          type: string
+          nullable: true
+
+        endDate:
+          type: string
+          nullable: true
+
+        tasks:
+          type: array
+
+          items:
+            $ref: "#/components/schemas/Task"
+
+        stats:
+          type: object
+
+          properties:
+            total:
+              type: integer
+
+            pending:
+              type: integer
+
+            todo:
+              type: integer
+
+            inProgress:
+              type: integer
+
+            done:
+              type: integer
+
+            byPriority:
+              type: object
+
+              properties:
+                high:
+                  type: integer
+
+                normal:
+                  type: integer
+
+                low:
+                  type: integer
+
+        pagination:
+          type: object
+
+          properties:
+            currentPage:
+              type: integer
+
+            totalPages:
+              type: integer
+
+            limit:
+              type: integer
+
+            total:
+              type: integer
+
+            hasMore:
+              type: boolean
+
+            count:
+              type: integer
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        email:
+          type: string
+          example: test@gmail.com
+
+        name:
+          type: string
+          example: Pardeep
+
+        profile:
+          type: string
+          example: https://example.com/profile.png
+
+        telegram:
+          type: string
+          example: "@username"
+
+        createdAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+        updatedAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+    Email:
+      type: object
+
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        to:
+          type: string
+          example: test@gmail.com
+
+        subject:
+          type: string
+          example: Meeting Reminder
+
+        body:
+          type: string
+          example: Team meeting at 5 PM today
+
+        scheduleTime:
+          type: string
+          example: "2026-05-22T10:00:00.000Z"
+
+        jobId:
+          type: string
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+        status:
+          type: string
+          enum:
+            - pending
+            - sent
+            - failed
+
+        createdAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+        updatedAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+    EmailListResponse:
+      type: object
+
+      properties:
+        total:
+          type: integer
+          example: 10
+
+        emails:
+          type: array
+
+          items:
+            $ref: "#/components/schemas/Email"
+    Notification:
+      type: object
+
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        title:
+          type: string
+          example: Logged in successfully
+
+        type:
+          type: string
+
+          enum:
+            - auth
+            - telegram
+            - yudo
+
+        description:
+          type: string
+          example: Welcome back to Yudo Scheduler
+
+        user:
+          type: integer
+          example: 5
+
+        read:
+          type: boolean
+          example: false
+
+        createdAt:
+          type: string
+          example: "2026-05-21T10:00:00.000Z"
+
+    NotificationListResponse:
+      type: object
+
+      properties:
+        notifications:
+          type: array
+
+          items:
+            $ref: "#/components/schemas/Notification"
+
+    
+paths:
+  /api/v1/user:
+    get:
+      summary: Test user route
+      tags:
+        - User
+
+      responses:
+        "200":
+          description: Route working successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: hello world from user route
+
+  /api/v1/user/sendotp:
+    post:
+      summary: Send OTP for registration
+      tags:
+        - Auth
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - email
+                - password
+
+              properties:
+                email:
+                  type: string
+                  example: test@gmail.com
+
+                password:
+                  type: string
+                  example: 123456
+
+      responses:
+        "200":
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OTP sent successfully!
+
+                  otp:
+                    type: string
+                    example: "1234"
+
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/user/verifyotp:
+    post:
+      summary: Verify OTP and login
+      tags:
+        - Auth
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - email
+                - otp
+
+              properties:
+                email:
+                  type: string
+                  example: test@gmail.com
+
+                otp:
+                  type: string
+                  example: "1234"
+
+      responses:
+        "200":
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+        "400":
+          description: Invalid OTP
+
+  /api/v1/user/login:
+    post:
+      summary: Login user
+      tags:
+        - Auth
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - email
+                - password
+
+              properties:
+                email:
+                  type: string
+                  example: test@gmail.com
+
+                password:
+                  type: string
+                  example: 123456
+
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+        "400":
+          description: Invalid credentials
+
+  /api/v1/user/get:
+    get:
+      summary: Get current user profile
+      tags:
+        - User
+
+      security:
+        - auth-token: []
+
+      responses:
+        "200":
+          description: User profile fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+        "401":
+          description: Unauthorized
+
+  /api/v1/user/update:
+    put:
+      summary: Update user profile
+      tags:
+        - User
+
+      security:
+        - auth-token: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                name:
+                  type: string
+                  example: Pardeep
+
+                profile:
+                  type: string
+                  example: https://example.com/profile.png
+
+      responses:
+        "200":
+          description: Profile updated successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: profile updated
+
+        "401":
+          description: Unauthorized
+
+  /api/v1/user/resetPass:
+    get:
+      summary: Generate reset password link
+      tags:
+        - Auth
+
+      security:
+        - auth-token: []
+
+      responses:
+        "200":
+          description: Password reset link generated
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset link generated successfully
+
+        "401":
+          description: Unauthorized
+
+  /api/v1/user/reset:
+    post:
+      summary: Reset password
+      tags:
+        - Auth
+
+      parameters:
+        - in: query
+          name: resetId
+          required: true
+
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - password
+
+              properties:
+                password:
+                  type: string
+                  example: newpassword123
+
+      responses:
+        "200":
+          description: Password reset successful
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password has been successfully reset.
+
+        "400":
+          description: Invalid or expired token
+
+  /api/v1/user/sendquickLogin:
+    post:
+      summary: Send quick login link
+      tags:
+        - Auth
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - email
+
+              properties:
+                email:
+                  type: string
+                  example: test@gmail.com
+
+      responses:
+        "200":
+          description: Quick login link sent
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Quick login link generated successfully!
+
+        "400":
+          description: Error sending quick login link
+
+  /api/v1/user/quickLogin:
+    get:
+      summary: Login using quick login token
+      tags:
+        - Auth
+
+      parameters:
+        - in: query
+          name: token
+          required: true
+
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: Quick login successful
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+        "400":
+          description: Invalid or expired token
+  
+
+  /api/v1/user/telegram:
+    put:
+      summary: Send telegram connection link
+      description: Sends telegram bot connection link to authenticated user's email
+      tags:
+        - Auth
+
+      security:
+        - auth-token: []
+
+      responses:
+        "200":
+          description: Telegram link sent successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: telegram link send successfuly !
+
+        "400":
+          description: Error while sending telegram link
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "401":
+          description: Unauthorized
+
+
+  /api/v1/email:
+    get:
+      summary: Test email route
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      responses:
+        "200":
+          description: Route working successfully
+
+  /api/v1/email/schedule:
+    post:
+      summary: Schedule an email reminder
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - subject
+                - body
+                - scheduleTime
+
+              properties:
+                subject:
+                  type: string
+                  example: Meeting Reminder
+
+                body:
+                  type: string
+                  example: Team meeting at 5 PM today
+
+                scheduleTime:
+                  type: string
+                  example: "2026-05-22T17:00:00"
+
+      responses:
+        "200":
+          description: Email scheduled successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Email scheduled successfully
+
+                  jobId:
+                    type: string
+
+                  email:
+                    $ref: "#/components/schemas/Email"
+
+        "400":
+          description: Validation error
+
+        "500":
+          description: Internal server error
+
+  /api/v1/email/update/{id}:
+    put:
+      summary: Update scheduled reminder
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+
+          schema:
+            type: integer
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                subject:
+                  type: string
+                  example: Updated Meeting Reminder
+
+                body:
+                  type: string
+                  example: Updated meeting schedule
+
+                scheduleTime:
+                  type: string
+                  example: "2026-05-22T20:00:00"
+
+      responses:
+        "200":
+          description: Reminder updated successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Reminder updated successfully
+
+                  jobId:
+                    type: string
+
+        "404":
+          description: Reminder not found
+
+        "403":
+          description: Unauthorized access
+
+  /api/v1/email/delete/{jobId}:
+    delete:
+      summary: Delete scheduled reminder
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: Reminder deleted successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Reminder deleted successfully!
+
+        "404":
+          description: Reminder not found
+
+        "403":
+          description: Unauthorized access
+
+  /api/v1/email/getall:
+    get:
+      summary: Get all scheduled reminders
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: query
+          name: limit
+
+          schema:
+            type: integer
+            example: 10
+
+        - in: query
+          name: skip
+
+          schema:
+            type: integer
+            example: 0
+
+        - in: query
+          name: status
+
+          schema:
+            type: string
+            enum:
+              - pending
+              - sent
+
+      responses:
+        "200":
+          description: Reminders fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailListResponse"
+
+        "400":
+          description: Error fetching reminders
+
+  /api/v1/email/getone/{id}:
+    get:
+      summary: Get one scheduled reminder
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Reminder fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Email"
+
+        "404":
+          description: Reminder not found
+
+        "403":
+          description: Unauthorized access
+
+  /api/v1/email/generate:
+    post:
+      summary: Generate AI email/reminder content
+      tags:
+        - AI
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                prompt:
+                  type: string
+                  example: Generate a professional meeting reminder email
+
+      responses:
+        "200":
+          description: AI content generated successfully
+
+        "400":
+          description: Invalid request
+
+
+  /api/v1/notification/getAll:
+    get:
+      summary: Get all user notifications
+      description: Returns all notifications for authenticated user
+      tags:
+        - Notification
+
+      security:
+        - auth-token: []
+
+      responses:
+        "200":
+          description: Notifications fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+
+        "401":
+          description: Unauthorized
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        "500":
+          description: Internal server error
+
+  /api/v1/task:
+    post:
+      summary: Create new task
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - title
+                - description
+
+              properties:
+                title:
+                  type: string
+                  example: Complete backend API
+
+                description:
+                  type: string
+                  example: Finish task API documentation
+
+                status:
+                  type: string
+
+                  enum:
+                    - pending
+                    - to do
+                    - in progress
+                    - done
+
+                estimatedTime:
+                  type: string
+                  example: "2026-05-25T10:00:00.000Z"
+
+                priority:
+                  type: string
+
+                  enum:
+                    - high
+                    - normal
+                    - low
+
+
+      responses:
+        "201":
+          description: Task created successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Task created successfully
+
+                  task:
+                    $ref: "#/components/schemas/Task"
+
+        "400":
+          description: Validation error
+
+        "500":
+          description: Internal server error
+
+    get:
+      summary: Get all tasks
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: query
+          name: limit
+
+          schema:
+            type: integer
+            example: 10
+
+        - in: query
+          name: skip
+
+          schema:
+            type: integer
+            example: 0
+
+        - in: query
+          name: priority
+
+          schema:
+            type: string
+
+            enum:
+              - high
+              - normal
+              - low
+
+        - in: query
+          name: startDate
+
+          schema:
+            type: string
+            example: "2026-05-01"
+
+        - in: query
+          name: endDate
+
+          schema:
+            type: string
+            example: "2026-05-30"
+
+      responses:
+        "200":
+          description: Tasks fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskListResponse"
+
+        "500":
+          description: Failed to fetch tasks
+
+  /api/v1/task/{id}:
+    get:
+      summary: Get task by ID
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Task fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+        "404":
+          description: Task not found
+
+    put:
+      summary: Update task
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+
+          schema:
+            type: integer
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                title:
+                  type: string
+
+                description:
+                  type: string
+
+                status:
+                  type: string
+
+                  enum:
+                    - pending
+                    - to do
+                    - in progress
+                    - done
+
+                estimatedTime:
+                  type: string
+
+                priority:
+                  type: string
+
+                  enum:
+                    - high
+                    - normal
+                    - low
+
+      responses:
+        "200":
+          description: Task updated successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Task updated
+
+                  task:
+                    $ref: "#/components/schemas/Task"
+
+        "404":
+          description: Task not found
+
+    delete:
+      summary: Delete task
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Task deleted successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Task deleted successfully
+
+        "404":
+          description: Task not found
+
+  /api/v1/task/timeframe/{timeframe}:
+    get:
+      summary: Get tasks by timeframe
+      tags:
+        - Task
+
+      security:
+        - auth-token: []
+
+      parameters:
+        - in: path
+          name: timeframe
+          required: true
+
+          schema:
+            type: string
+
+            enum:
+              - week
+              - month
+              - all
+
+        - in: query
+          name: limit
+
+          schema:
+            type: integer
+            example: 10
+
+        - in: query
+          name: page
+
+          schema:
+            type: integer
+            example: 1
+
+        - in: query
+          name: startDate
+
+          schema:
+            type: string
+            example: "2026-05-01"
+
+        - in: query
+          name: endDate
+
+          schema:
+            type: string
+            example: "2026-05-30"
+
+      responses:
+        "200":
+          description: Tasks fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskTimeframeResponse"
+
+        "400":
+          description: Invalid timeframe or dates
+
+        "500":
+          description: Failed to fetch tasks
