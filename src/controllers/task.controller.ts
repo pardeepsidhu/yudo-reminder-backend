@@ -4,7 +4,8 @@ import { Op } from "sequelize";
 const createTask = async (req: any, res: any) => {
   try {
     const { title, description, status, estimatedTime, time, priority } = req.body;
-    const user = req.user._id;
+    console.log("reqee",req.user)
+    const user = req.user.id;
 
     if (!title || !description) {
       return res.status(400).send({ error: "Please provide all required fields!" });
@@ -29,7 +30,7 @@ const createTask = async (req: any, res: any) => {
 
 const getTasks = async (req: any, res: any) => {
   try {
-    const user = req.user._id;
+    const user = req.user.id;
     const limit = parseInt(req.query.limit);
     const skip = parseInt(req.query.skip) || 0;
     const priority = req.query.priority;
@@ -94,7 +95,7 @@ const getTaskById = async (req: any, res: any) => {
     const task = await Task.findOne({
       where: {
         id: req.params.id,
-        user: req.user._id,
+        user: req.user.id,
       },
     });
 
@@ -117,7 +118,7 @@ const updateTask = async (req: any, res: any) => {
     const task = await Task.findOne({
       where: {
         id,
-        user: req.user._id,
+        user: req.user.id,
       },
     });
 
@@ -141,7 +142,7 @@ const deleteTask = async (req: any, res: any) => {
     const task = await Task.findOne({
       where: {
         id,
-        user: req.user._id,
+        user: req.user.id,
       },
     });
 
@@ -160,7 +161,7 @@ const deleteTask = async (req: any, res: any) => {
 
 const getTasksByTimeframe = async (req: any, res: any) => {
   try {
-    const user = req.user._id;
+    const user = req.user.id;
     const timeframe = req.params.timeframe;
 
     const limit = parseInt(req.query.limit) || 10;

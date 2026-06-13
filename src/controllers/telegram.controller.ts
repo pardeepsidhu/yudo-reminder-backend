@@ -24,13 +24,12 @@ const pollUpdates = async () => {
       const text = update.message.text?.trim();
 
       if (!text.startsWith("/start")) continue;
-
-      const _id = text.replace("/start", "").trim();
-      if (!_id) continue;
+      const id = text.replace("/start", "").trim();
+      if (!id) continue;
 
       await User.update(
         { telegram: chatId },
-        { where: { _id } }
+        { where: { id :id} }
       );
 
       await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
@@ -48,8 +47,7 @@ const pollUpdates = async () => {
 const telegramUpadate = async (req: any, res: any) => {
   try {
     const email = req.user.email;
-    const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(req.user._id)}`;
-
+    const link = `https://t.me/${process.env.BOT_USERNAME}?start=${encodeURIComponent(req.user.id)}`;
     await sendTelegramLink(link, email);
 
     const notificationData = {
@@ -57,7 +55,7 @@ const telegramUpadate = async (req: any, res: any) => {
       type: "telegram",
       description:
         "You have successfuly recieved telegram conection link , Please check your email inbox ,  Stay updated a keep connected with yudo-scheduler",
-      user: req.user._id,
+      user: req.user.id,
     };
 
     await createNotification(notificationData);

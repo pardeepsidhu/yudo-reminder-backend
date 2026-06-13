@@ -248,7 +248,7 @@ const scheduleEmail = async (req: any, res: Response) => {
     const { subject, body, scheduleTime } = req.body;
 
     const to = req.user.email;
-    const user = await User.findByPk(req.user._id);
+    const user = await User.findByPk(req.user.id);
     const telegram = (user as any)?.telegram ?? null;
 
     console.log('Received scheduleTime:', scheduleTime);

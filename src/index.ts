@@ -28,7 +28,7 @@ app.use(
   swaggerUi.setup(swaggerDocument)
 );
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const startServer = async () => {
   try {

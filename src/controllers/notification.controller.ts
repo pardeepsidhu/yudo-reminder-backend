@@ -29,7 +29,7 @@ export const createNotification = async (notificationData: any) => {
 export const getNotification = async (req: any, res: any) => {
   try {
     // Get user ID from auth middleware
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     // Optional query parameters
     const page = parseInt(req.query.page) || 1;
