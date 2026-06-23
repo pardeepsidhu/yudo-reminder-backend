@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var authentication_1 = require("../middleware/authentication");
+var task_controller_1 = require("../controllers/task.controller");
+var router = (0, express_1.Router)();
+router.post("/", authentication_1.default, task_controller_1.createTask);
+router.get("/", authentication_1.default, task_controller_1.getTasks);
+router.get("/:id", authentication_1.default, task_controller_1.getTaskById);
+router.put("/:id", authentication_1.default, task_controller_1.updateTask);
+router.delete("/:id", authentication_1.default, task_controller_1.deleteTask);
+router.get("/timeframe/:timeframe", authentication_1.default, task_controller_1.getTasksByTimeframe);
+exports.default = router;

@@ -30,7 +30,7 @@ const sendOtp = async (req:any, res:any) => {
     });
 
     // If user exists and OTP already verified
-    if (user && user.otp === "verified") {
+    if (user && (user as any).otp === "verified") {
       return res
         .status(400)
         .send({ error: "User already exists. Please log in!" });
@@ -94,13 +94,13 @@ const verifyOtp = async (req:any, res:any) => {
       });
     }
 
-    if (user.otp == "verified") {
+    if ((user as any).otp == "verified") {
       return res.status(404).send({
         error: "User Already Exist Please Login !",
       });
     }
 
-    if (user.otp != otp) {
+    if ((user as any).otp != otp) {
       return res.send({
         error: "Please enter valid otp",
       });
@@ -117,7 +117,7 @@ const verifyOtp = async (req:any, res:any) => {
 
     const link = `https://t.me/${
       process.env.BOT_USERNAME
-    }?start=${encodeURIComponent(user.id)}`;
+    }?start=${encodeURIComponent((user as any).id)}`;
 
     await sendTelegramLink(link, email);
 
@@ -125,18 +125,22 @@ const verifyOtp = async (req:any, res:any) => {
       where: { email },
     });
 
+    if(!user)   return res.status(500).send({
+      error: "Some error occurred while verifying OTP.",
+    });
+    
     user = user.toJSON();
 
-    delete user.password;
+    delete (user as any).password;
 
-    let token = jwt.sign(user, process.env.JWT_SECRET);
+    let token = jwt.sign(user as any, process.env.JWT_SECRET as string);
 
     let notificationData = {
       title: "Telegram email sent",
       type: "telegram",
       description:
         "You have successfuly recieved telegram conection link , Please check your email inbox ,  Stay updated a keep connected with yudo-scheduler",
-      user: user.id,
+      user: (user as any).id,
     };
 
     await createNotification(notificationData);
@@ -171,7 +175,7 @@ const login = async (req:any, res:any) => {
       });
     }
 
-    if (user.otp != "verified") {
+    if ((user as any).otp != "verified") {
       return res.status(400).send({
         error: "user not verified !",
       });
@@ -179,7 +183,7 @@ const login = async (req:any, res:any) => {
 
     let compairPassword = await bcrypt.compare(
       password,
-      user.password
+      (user as any).password
     );
 
     if (!compairPassword) {
@@ -195,14 +199,14 @@ const login = async (req:any, res:any) => {
       type: "yudo",
       description:
         "Welcome back , You have successfuly logged in with yudo-scheduler ,  Stay updated a keep connected with yudo-scheduler",
-      user: user.id,
+      user: (user as any).id,
     };
 
     await createNotification(notificationData);
 
-    delete user.password;
+    delete (user as any).password;
 
-    let token = jwt.sign(user, process.env.JWT_SECRET);
+    let token = jwt.sign(user as any, process.env.JWT_SECRET as string);
 
     return res.send({ token });
   } catch (error) {
@@ -234,7 +238,7 @@ const getProfile = async (req:any, res:any) => {
 
     user = user.toJSON();
 
-    delete user.password;
+    delete (user as any).password;
 
     res.send(user);
   } catch (error) {
@@ -266,7 +270,7 @@ const updateProfile = async (req:any, res:any) => {
       });
     }
 
-    const updateFields = {};
+    const updateFields:{name ?:string,profile ?:string} = {};
 
     if (name !== undefined) {
       updateFields.name = name;
@@ -318,13 +322,13 @@ const resetPasswordLink = async (req:any, res:any) => {
       });
     }
 
-    const resetId = user.id;
+    const resetId = (user as any).id;
 
     const token = jwt.sign(
       {
         resetId,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "10m",
       }
@@ -332,14 +336,14 @@ const resetPasswordLink = async (req:any, res:any) => {
 
     const resetLink = `https://yudo-scheduler.vercel.app/login/?resetId=${token}`;
 
-    await sendResetPasswordLink(resetLink, user.email);
+    await sendResetPasswordLink(resetLink, (user as any).email);
 
     let notificationData = {
       title: "Change password email sent",
       type: "auth",
       description:
         "You have successfuly recieved reset password link , Please check your email inbox and insure it will expire in 10 minutes  ,  Stay updated a keep connected with yudo-scheduler",
-      user: user.id,
+      user: (user as any).id,
     };
 
     await createNotification(notificationData);
@@ -366,10 +370,10 @@ const resetPassword = async (req:any, res:any) => {
     // Verify JWT
     const data = jwt.verify(
       token,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
 
-    const userId = data.resetId;
+    const userId = (data as any).resetId;
 
     const user = await User.findByPk(userId);
 
@@ -384,7 +388,7 @@ const resetPassword = async (req:any, res:any) => {
       8
     );
 
-    user.password = hashedPassword;
+    (user as any).password = hashedPassword;
 
     await user.save();
 
@@ -393,7 +397,7 @@ const resetPassword = async (req:any, res:any) => {
       type: "auth",
       description:
         "Your password has been reset successfuly ,  Stay updated a keep connected with yudo-scheduler",
-      user: user.id,
+      user: (user as any).id,
     };
 
     await createNotification(notificationData);
@@ -404,7 +408,7 @@ const resetPassword = async (req:any, res:any) => {
   } catch (error) {
     console.error(error);
 
-    if (error.name === "TokenExpiredError") {
+    if ((error as any).name === "TokenExpiredError") {
       return res.status(400).json({
         error: "Reset link has expired.",
       });
@@ -439,9 +443,9 @@ const quickLoginLink = async (req:any, res:any) => {
 
     const token = jwt.sign(
       {
-        userId: user.id,
+        userId: (user as any).id,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET as string,
       {
         expiresIn: "10m",
       }
@@ -451,7 +455,7 @@ const quickLoginLink = async (req:any, res:any) => {
 
     await sendQuickLoginLink(
       quickLoginLink,
-      user.email
+      (user as any).email
     );
 
     res.status(200).send({
@@ -483,10 +487,10 @@ const quickLogin = async (req:any, res:any) => {
 
     const data = jwt.verify(
       token,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET as string
     );
 
-    const userId = data.userId;
+    const userId = (data as any).userId;
 
     let user = await User.findByPk(userId);
 
@@ -498,11 +502,11 @@ const quickLogin = async (req:any, res:any) => {
 
     user = user.toJSON();
 
-    delete user.password;
+    delete (user as any).password;
 
     const loginToken = jwt.sign(
-      user,
-      process.env.JWT_SECRET
+      user as any,
+      process.env.JWT_SECRET as string
     );
 
     let notificationData = {
@@ -510,7 +514,7 @@ const quickLogin = async (req:any, res:any) => {
       type: "yudo",
       description:
         "Welcome back , You have successfuly logged in with yudo-scheduler using quick login link ,  Stay updated a keep connected with yudo-scheduler",
-      user: user.id,
+      user: (user as any).id,
     };
 
     await createNotification(notificationData);
@@ -521,7 +525,7 @@ const quickLogin = async (req:any, res:any) => {
   } catch (error) {
     console.error("Quick login error:", error);
 
-    if (error.name === "TokenExpiredError") {
+    if ((error as any).name === "TokenExpiredError") {
       return res.status(400).json({
         error: "Login link has expired.",
       });
