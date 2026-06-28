@@ -770,6 +770,68 @@ paths:
 
         "500":
           description: Internal server error
+          
+          
+  /api/v1/email/schedulee:
+    post:
+      summary: Schedule an email reminder
+      tags:
+        - Email
+
+      security:
+        - auth-token: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - subject
+                - body
+                - scheduleTime
+
+              properties:
+                subject:
+                  type: string
+                  example: Meeting Reminder
+
+                body:
+                  type: string
+                  example: Team meeting at 5 PM today
+
+                scheduleTime:
+                  type: string
+                  example: "2026-05-22T17:00:00"
+
+      responses:
+        "200":
+          description: Email scheduled successfully
+
+          content:
+            application/json:
+              schema:
+                type: object
+
+                properties:
+                  message:
+                    type: string
+                    example: Email scheduled successfully
+
+                  jobId:
+                    type: string
+
+                  email:
+                    $ref: "#/components/schemas/Email"
+
+        "400":
+          description: Validation error
+
+        "500":
+          description: Internal server error
 
   /api/v1/email/update/{id}:
     put:
@@ -972,36 +1034,44 @@ paths:
         "400":
           description: Invalid request
 
-
-  /api/v1/notification/getAll:
-    get:
-      summary: Get all user notifications
-      description: Returns all notifications for authenticated user
+  /api/v1/rhaenyra/chat:
+    post:
+      summary: Chat with the Rhaenyra AI assistant
       tags:
-        - Notification
+        - AI
 
-      security:
-        - auth-token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: Current user message.
+                  example: "What is Yudo Scheduler?"
+
+                history:
+                  type: array
+                  description: Previous conversation history. Each item can contain any JSON structure.
+                  items:
+                    type: object
+                    additionalProperties: true
+                  example:
+                    - role: user
+                      content: "Hello"
+                    - role: assistant
+                      content: "Hi! I'm Rhaenyra. How can I help you today?"
 
       responses:
         "200":
-          description: Notifications fetched successfully
+          description: AI response generated successfully
 
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationListResponse"
-
-        "401":
-          description: Unauthorized
-
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-        "500":
-          description: Internal server error
+        "400":
+          description: Invalid request
 
   /api/v1/task:
     post:

@@ -9,6 +9,7 @@ import notificationRoute from "./routes/notification.route"
 import taskRoute from "./routes/task.route"
 import { swaggerUi, swaggerDocument } from "./docs/swagger";
 import { pollUpdates } from "./controllers/telegram.controller"
+import AIRoute from "./routes/ai.route"
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/email",emailRouter)
 app.use("/api/v1/notification",notificationRoute)
 app.use("/api/v1/task",taskRoute)
+app.use("/api/v1/ai",AIRoute)
 
 app.use(
   "/api-docs",

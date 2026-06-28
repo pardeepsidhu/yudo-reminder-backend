@@ -42,7 +42,7 @@ const generete = async (req:any, res:any) => {
     });
 
   } catch (error:any) {
-    console.log("cccc",error)
+
 
     return res.status(400).send({
       success: false,
@@ -56,4 +56,45 @@ const generete = async (req:any, res:any) => {
   }
 };
 
-export { generete };
+
+
+ async function chat(req: any, res: any) {
+  try {
+    const { query, history } = req.body;
+
+     console.log("here is resoponse",query, history )
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "query is required",
+      });
+    }
+
+    const response = await fetch(
+      `${process.env.AI_SERVICE_URL}/api/v1/rhaenyra/chat?type=scheduler`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          history,
+        }),
+      }
+    );
+    
+
+    const data = await response.json();
+    console.log("here is resoponse",response,data)
+
+    return res.status(response.status).json(data);
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "AI generation failed",
+    });
+  }
+}
+
+export { generete ,chat };
