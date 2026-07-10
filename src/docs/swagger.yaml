@@ -6,15 +6,16 @@ info:
   description: Authentication and user management API for Yudo Scheduler
 
 servers:
-  - url: http://localhost:5000
+  - url: http://localhost:5001
     description: Local server
 
 components:
+
   securitySchemes:
     auth-token:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+      type: apiKey
+      in: header
+      name: auth-token
 
   schemas:
     Task:
@@ -74,6 +75,129 @@ components:
         updatedAt:
           type: string
           example: "2026-05-21T10:00:00.000Z"
+          
+    Routine:
+      type: object
+      required:
+        - title
+        - startDate
+      properties:
+        title:
+          type: string
+          example: Morning Routine
+
+        description:
+          type: string
+          example: Daily morning activities
+
+        category:
+          type: string
+          example: Personal
+
+        priority:
+          type: string
+          enum:
+            - critical
+            - high
+            - medium
+            - low
+            - optional
+          example: high
+
+        color:
+          type: string
+          example: "#2563EB"
+
+        icon:
+          type: string
+          example: sun
+
+        repeatType:
+          type: string
+          enum:
+            - once
+            - daily
+            - weekly
+            - monthly
+            - yearly
+            - custom
+          example: weekly
+
+        repeatConfig:
+          type: object
+          example:
+            days:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+
+        dateMode:
+          type: string
+          enum:
+            - single
+            - range
+            - until
+            - forever
+          example: single
+
+        startDate:
+          type: string
+          format: date
+          example: "2026-07-08"
+
+        endDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2026-07-31"
+
+        skipDates:
+          type: array
+          items:
+            type: string
+            format: date
+
+        allDay:
+          type: boolean
+          example: false
+
+        startTime:
+          type: string
+          example: "09:00"
+
+        endTime:
+          type: string
+          example: "10:00"
+
+        estimatedMinutes:
+          type: integer
+          example: 60
+
+        location:
+          type: string
+          example: Home
+
+        notes:
+          type: string
+          example: Complete before office.
+
+        tags:
+          type: array
+          items:
+            type: string
+          example:
+            - health
+            - exercise
+
+        status:
+          type: string
+          enum:
+            - active
+            - paused
+            - archived
+          example: active
 
     TaskListResponse:
       type: object
@@ -1405,3 +1529,274 @@ paths:
 
         "500":
           description: Failed to fetch tasks
+          
+          
+          
+  
+
+  /api/v1/routine:
+    
+        post:
+          tags:
+            - Routine
+          summary: Create Routine
+          description: Create a new routine for the authenticated user.
+    
+          security:
+            - auth-token: []
+    
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Routine'
+    
+          responses:
+            '201':
+              description: Routine created successfully
+    
+            '400':
+              description: Invalid request
+    
+            '401':
+              description: Unauthorized
+    
+            '500':
+              description: Internal server error
+    
+        get:
+          tags:
+            - Routine
+          summary: Get All Routines
+          description: Returns all routines belonging to the authenticated user.
+    
+          security:
+            - auth-token: []
+    
+          parameters:
+            - in: query
+              name: page
+              schema:
+                type: integer
+              example: 1
+    
+            - in: query
+              name: limit
+              schema:
+                type: integer
+              example: 20
+    
+            - in: query
+              name: skip
+              schema:
+                type: integer
+              example: 0
+    
+            - in: query
+              name: priority
+              schema:
+                type: string
+                enum:
+                  - critical
+                  - high
+                  - medium
+                  - low
+                  - optional
+    
+            - in: query
+              name: status
+              schema:
+                type: string
+                enum:
+                  - active
+                  - paused
+                  - archived
+    
+            - in: query
+              name: repeatType
+              schema:
+                type: string
+                enum:
+                  - once
+                  - daily
+                  - weekly
+                  - monthly
+                  - yearly
+                  - custom
+    
+            - in: query
+              name: category
+              schema:
+                type: string
+    
+            - in: query
+              name: search
+              schema:
+                type: string
+    
+            - in: query
+              name: startDate
+              schema:
+                type: string
+                format: date
+    
+            - in: query
+              name: endDate
+              schema:
+                type: string
+                format: date
+    
+          responses:
+            '200':
+              description: List of routines retrieved successfully
+    
+            '401':
+              description: Unauthorized
+    
+            '500':
+              description: Internal server error
+  /api/v1/routine/tasks:
+    post:
+      tags:
+        - Routine
+      summary: Attach Task to Routine
+      description: Attach an existing task to an existing routine.
+  
+      security:
+        - auth-token: []
+  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - routineId
+                - taskId
+              properties:
+                routineId:
+                  type: integer
+                  example: 12
+                  description: ID of the routine
+  
+                taskId:
+                  type: integer
+                  example: 25
+                  description: ID of the task
+  
+      responses:
+        "201":
+          description: Task attached successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Task attached to routine successfully
+  
+                  routineTask:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+  
+                      routineId:
+                        type: integer
+                        example: 12
+  
+                      taskId:
+                        type: integer
+                        example: 25
+  
+        "400":
+          description: routineId and taskId are required
+  
+        "401":
+          description: Unauthorized
+  
+        "404":
+          description: Routine or Task not found
+  
+        "409":
+          description: Task already attached to routine
+  
+        "500":
+          description: Internal Server Error
+
+
+  /api/v1/routine/reminders:
+    post:
+      tags:
+        - Routine
+      summary: Attach Reminder to Routine
+      description: Attach an existing email reminder to an existing routine.
+  
+      security:
+        - auth-token: []
+  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - routineId
+                - emailId
+              properties:
+                routineId:
+                  type: integer
+                  example: 12
+                  description: ID of the routine
+  
+                emailId:
+                  type: integer
+                  example: 8
+                  description: ID of the email reminder
+  
+      responses:
+        "201":
+          description: Reminder attached successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reminder attached to routine successfully
+  
+                  routineReminder:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+  
+                      routineId:
+                        type: integer
+                        example: 12
+  
+                      emailId:
+                        type: integer
+                        example: 8
+  
+        "400":
+          description: routineId and emailId are required
+  
+        "401":
+          description: Unauthorized
+  
+        "404":
+          description: Routine or Email not found
+  
+        "409":
+          description: Reminder already attached to routine
+  
+        "500":
+          description: Internal Server Error
