@@ -302,6 +302,55 @@ const getTasksByTimeframe = async (req: any, res: any) => {
   }
 };
 
+
+const getTasksByDateRange = async (req: any, res: any) => {
+  try {
+    const user = req.user.id;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        error: "startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const tasks = await Task.findAll({
+      where: {
+        user,
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const filteredTasks = tasks.filter((task: any) => {
+      const entries = task.time || [];
+
+      return entries.some((entry: any) => {
+        const entryStart = new Date(entry.stated);
+
+        return entryStart >= start && entryStart <= end;
+      });
+    });
+
+
+    return res.status(200).json({
+      total: filteredTasks.length,
+      tasks: filteredTasks,
+    });
+  } catch (error: any) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: "Failed to fetch tasks",
+      message: error.message,
+    });
+  }
+};
+
+
 export {
   createTask,
   getTasks,
@@ -309,4 +358,5 @@ export {
   updateTask,
   deleteTask,
   getTasksByTimeframe,
+  getTasksByDateRange
 };

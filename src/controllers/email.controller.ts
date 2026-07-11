@@ -5,6 +5,7 @@ import schedule from 'node-schedule';
 import axios from 'axios';
 import moment from 'moment-timezone';
 import { Request,Response } from 'express';
+import { Op } from 'sequelize';
 
 import {Email} from '../models/email.model';
 import {User }from '../models/user.model';
@@ -500,6 +501,49 @@ const updateSchedule = async (req: any, res: Response) => {
   }
 };
 
+
+
+
+const getEmailsByDateRange = async (req: any, res: any) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        error: "startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const emails = await Email.findAll({
+      where: {
+        scheduleTime: {
+          [Op.between]: [start, end],
+        },
+      },
+      order: [["scheduleTime", "ASC"]],
+    });
+
+    return res.status(200).json({
+      total: emails.length,
+      emails,
+    });
+  } catch (error: any) {
+    console.error("Error fetching emails:", error);
+
+    return res.status(500).json({
+      error: "Failed to fetch emails",
+      message: error.message,
+    });
+  }
+};
+
+
+
 export {
   sendOtpFun,
   scheduleEmail,
@@ -508,4 +552,5 @@ export {
   getOne,
   sendTelegramLink,
   updateSchedule,
+  getEmailsByDateRange
 };

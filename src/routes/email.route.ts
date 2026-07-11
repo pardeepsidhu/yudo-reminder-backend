@@ -2,6 +2,7 @@ import { Router } from "express";
 import { 
   deleteSchedule, 
   getAll, 
+  getEmailsByDateRange, 
   getOne, 
   scheduleEmail, 
   updateSchedule 
@@ -14,7 +15,7 @@ const router = Router();
 router.get("/", autherntication, (req, res) => {
   res.send("hello world from email route");
 });
-
+router.get("/date-range", autherntication, getEmailsByDateRange);
 // Schedule routes
 router.post("/schedule", autherntication, scheduleEmail);
 router.put("/update/:id", autherntication, updateSchedule);
