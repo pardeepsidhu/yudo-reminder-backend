@@ -44,6 +44,7 @@ Notification.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    
   },
   {
     sequelize: sequelize,

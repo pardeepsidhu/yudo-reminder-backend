@@ -57,6 +57,10 @@ Task.init(
       allowNull: false,
       defaultValue: "normal",
     },
+    isPartOfRoutine: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   },
   {
     sequelize: sequelize,

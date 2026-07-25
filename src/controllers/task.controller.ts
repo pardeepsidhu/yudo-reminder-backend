@@ -3,8 +3,8 @@ import { Op } from "sequelize";
 
 const createTask = async (req: any, res: any) => {
   try {
-    const { title, description, status, estimatedTime, time, priority } = req.body;
-    console.log("reqee",req.user)
+    const { title, description, status, estimatedTime, time, priority ,isPartOfRoutine} = req.body;
+
     const user = req.user.id;
 
     if (!title || !description) {
@@ -19,6 +19,7 @@ const createTask = async (req: any, res: any) => {
       estimatedTime,
       time,
       priority: priority || "normal",
+      isPartOfRoutine :isPartOfRoutine || false
     });
 
     res.status(201).send({ message: "Task created successfully", task });
@@ -168,9 +169,14 @@ const getTasksByTimeframe = async (req: any, res: any) => {
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
 
+  
+
     let startDate: Date | null, endDate: Date | null;
     const query: any = { user };
 
+      if (req.query.isPartOfRoutine !== undefined) {
+        query.isPartOfRoutine = req.query.isPartOfRoutine === "true";
+      }
     if (req.query.startDate && req.query.endDate) {
       startDate = new Date(req.query.startDate);
       endDate = new Date(req.query.endDate);
